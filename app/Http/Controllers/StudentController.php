@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SchoolClass;
 use App\Models\Student;
 use Illuminate\Http\Request;
 
@@ -9,26 +10,32 @@ class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::all();
+        $students = Student::with('schoolClass')->get();
         return view('student.index', compact('students'));
     }
 
     function create()
     {
-        return view('student.create');
+        $schoolClasses = SchoolClass::all();
+        return view('student.create', compact('schoolClasses'));
     }
 
     public function store(Request $request)
     {
+        $request->validate([
+            'name' => 'required',
+            'cpf' => 'required|unique:students',
+            'birth_date' => 'required|date',
+            'school_class_id' => 'required|exists:school_classes,id',
+        ]);
+
         $created = Student::create($request->all());
 
         if ($created) {
             return redirect()->route('students.index')->with('sucess', 'Aluno cadastrado com sucesso');
-        }
-        else {
+        } else {
             return redirect()->back()->with('error', 'Erro ao cadastrar Aluno');
-       } 
-
+        }
     }
 
     public function show(Student $student)
@@ -38,22 +45,28 @@ class StudentController extends Controller
 
     public function edit(Student $student)
     {
+        $schoolClasses = SchoolClass::all();
         $edited = Student::findorfail($student->id);
-        
-        return view('student.edit', compact('student'));
 
+        return view('student.edit',  compact('student', 'schoolClasses'));
     }
 
     public function update(Request $request, Student $student)
     {
+          $request->validate([
+            'name' => 'required',
+            'cpf' => 'required|unique:students,cpf,' . $student->id,
+            'birth_date' => 'required|date',
+            'school_class_id' => 'required|exists:school_classes,id',
+        ]);
+
         $students = Student::findorfail($student->id);
 
         $updated = $students->update($request->all());
 
         if ($updated) {
             return redirect()->route('students.index')->with('sucess', 'Aluno atualizado com sucesso');
-        }
-        else {
+        } else {
             return redirect()->back()->with('error', 'Erro ao atualizar aluno');
         }
     }
@@ -66,8 +79,7 @@ class StudentController extends Controller
 
         if ($deleted) {
             return redirect()->route('students.index')->with('sucess', 'Aluno excluído com sucesso');
-        }
-        else{
+        } else {
             return redirect()->back()->with('error', 'Erro ao excluír aluno');
         }
     }
