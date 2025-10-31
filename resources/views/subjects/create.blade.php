@@ -1,24 +1,48 @@
-<h1>Cadastrar Matéria</h1>
+@extends('layouts.app')
 
-<form action="{{ route('subjects.store') }}" method="POST">
-@csrf
-<label>Nome:</label>
-<input type="text" name="name" value="{{ old('name') }}" required><br>
+@section('content')
+<div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-2xl shadow">
+    <h1 class="text-2xl font-bold mb-6">Adicionar Matéria</h1>
 
-<label>Código:</label>
-<input type="text" name="code" value="{{ old('code') }}" required><br>
+    <form method="POST" action="{{ route('subjects.store') }}" class="space-y-4">
+        @csrf
 
-<label>Carga Horária:</label>
-<input type="number" name="workload" value="{{ old('workload') }}"><br>
+        <div>
+            <label class="block text-gray-700">Matéria</label>
+            <select name="name" class="w-full border rounded-lg px-3 py-2">
+                @foreach($materiasPadrao as $materia)
+                    <option value="{{ $materia }}">{{ $materia }}</option>
+                @endforeach
+            </select>
+        </div>
 
-<label>Série:</label>
-<input type="text" name="grade_level" value="{{ old('grade_level') }}"><br>
+        <div>
+            <label class="block text-gray-700">Professor</label>
+            <select name="teacher_id" class="w-full border rounded-lg px-3 py-2">
+                @foreach($teachers as $teacher)
+                    <option value="{{ $teacher->id }}">{{ $teacher->name }}</option>
+                @endforeach
+            </select>
+        </div>
 
-<label>Status:</label>
-<select name="status">
-<option value="active" {{ old('status') == 'active' ? 'selected' : '' }}>Ativo</option>
-<option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inativo</option>
-</select><br>
+        <div>
+            <label class="block text-gray-700">Turma</label>
+            <select name="school_class_id" class="w-full border rounded-lg px-3 py-2">
+                @foreach($turmas as $turma)
+                    <option value="{{ $turma->id }}">{{ $turma->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div>
 
-<input type="submit" value="Cadastrar">
-</form>
+            <label class="block text-gray-700">Code:</label>
+            <input type="text" name="code" id="" class="w-full border rounded-lg px-3 py-2" required>
+        </div>
+
+        <button type="submit"
+            class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+            Salvar
+        </button>
+    </form>
+</div>
+@endsection

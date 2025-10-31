@@ -1,24 +1,23 @@
-<h1>Editar Matéria</h1>
+@extends('layouts.app')
 
-<form action="{{ route('subjects.update', $subject) }}" method="POST">
-@csrf @method('PUT')
-<label>Nome:</label>
-<input type="text" name="name" value="{{ old('name', $subject->name) }}" required><br>
+@section('content')
+<div class="max-w-md mx-auto mt-10 bg-white p-6 rounded-2xl shadow">
+    <h1 class="text-2xl font-bold mb-6 text-center">Editar Matéria</h1>
 
-<label>Código:</label>
-<input type="text" name="code" value="{{ old('code', $subject->code) }}" required><br>
+    <form method="POST" action="{{ route('subjects.update', $subject) }}" class="space-y-4">
+        @csrf
+        @method('PUT')
 
-<label>Carga Horária:</label>
-<input type="number" name="workload" value="{{ old('workload', $subject->workload) }}"><br>
+        <div>
+            <label class="block text-gray-700">Nome da Matéria</label>
+            <input type="text" name="name" value="{{ $subject->name }}"
+                   class="w-full border rounded-lg px-3 py-2" required>
+        </div>
 
-<label>Série:</label>
-<input type="text" name="grade_level" value="{{ old('grade_level', $subject->grade_level) }}"><br>
-
-<label>Status:</label>
-<select name="status">
-<option value="active" {{ old('status', $subject->status) == 'active' ? 'selected' : '' }}>Ativo</option>
-<option value="inactive" {{ old('status', $subject->status) == 'inactive' ? 'selected' : '' }}>Inativo</option>
-</select><br>
-
-<input type="submit" value="Atualizar">
-</form>
+        <button type="submit"
+            class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+            Atualizar
+        </button>
+    </form>
+</div>
+@endsection

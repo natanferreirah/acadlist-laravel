@@ -3,69 +3,81 @@
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
+use App\Models\Teacher;
+use App\Models\SchoolClass;
 use Illuminate\Http\Request;
 
 class SubjectController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $subjects = Subject::with('teachers')->get();
-        return view('subjects.index', compact('subjects'));
+        $turmas = SchoolClass::all();
+        $turmaId = $request->input('turma');
+
+        $subjects = Subject::with(['teachers' => function ($q) {
+            $q->withPivot('school_class_id');
+        }])->get();
+
+        if ($turmaId) {
+            $subjects = $subjects->filter(function ($subject) use ($turmaId) {
+                return $subject->teachers->contains(function ($teacher) use ($turmaId) {
+                    return $teacher->pivot->school_class_id == $turmaId;
+                });
+            });
+        }
+
+        return view('subjects.index', compact('subjects', 'turmas', 'turmaId'));
     }
 
     public function create()
     {
-        return view('subjects.create');
+        $materiasPadrao = ['Matemática', 'Português', 'História', 'Geografia', 'Ciências', 'Inglês'];
+        $teachers = Teacher::all();
+        $turmas = SchoolClass::all();
+
+        return view('subjects.create', compact('materiasPadrao', 'teachers', 'turmas'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:20|unique:subjects',
-            'workload' => 'integer|nullable',
-            'grade_level' => 'string|nullable',
-            'status' => 'in:active,inactive',
+            'teacher_id' => 'required|exists:teachers,id',
+            'school_class_id' => 'required|exists:school_classes,id',
         ]);
 
-        $created = Subject::create($validated);
+        $subject = Subject::firstOrCreate(['name' => $validated['name']]);
 
-        if ($created) {
-            return redirect()->route('subjects.index')->with('success', 'Matéria cadastrada!');           
-        }
-            return redirect()->back()->with('error', 'Erro ao cadastrar matéria');
+        $subject->teachers()->attach($validated['teacher_id'], [
+            'school_class_id' => $validated['school_class_id']
+        ]);
+
+        return redirect()->route('subjects.index')->with('success', 'Matéria criada com sucesso!');
     }
 
     public function edit(Subject $subject)
     {
-        return view('subjects.edit', compact('subject'));
+        $teachers = Teacher::all();
+        $turmas = SchoolClass::all();
+
+        return view('subjects.edit', compact('subject', 'teachers', 'turmas'));
     }
 
     public function update(Request $request, Subject $subject)
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:20|unique:subjects,code,' . $subject->id,
-            'workload' => 'integer|nullable',
-            'grade_level' => 'string|nullable',
-            'status' => 'in:active,inactive',
         ]);
 
-        $updated = $subject->update($validated);
+        $subject->update(['name' => $validated['name']]);
 
-        if ($updated) {
-            return redirect()->route('subjects.index')->with('success', 'Matéria atualizada!');
-        }
-            return redirect()->back()->with('error', 'Erro ao atualizar matéria');  
+        return redirect()->route('subjects.index')->with('success', 'Matéria atualizada!');
     }
 
     public function destroy(Subject $subject)
     {
-        $deleted = $subject->delete();
+        $subject->delete();
 
-        if ($deleted) {
-            return redirect()->route('subjects.index')->with('success', 'Matéria excluída!');
-        }
-            return redirect()->back()->with('error', 'Erro ao excluir matéria');
+        return redirect()->route('subjects.index')->with('success', 'Matéria excluída!');
     }
 }

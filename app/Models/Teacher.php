@@ -28,15 +28,11 @@ class Teacher extends Model
     {
         $this->attributes['cpf'] = preg_replace('/\D/', '', $value); // remove tudo que não é número
     }
-
-    public function getBirthDateFormattedAttribute()
-    {
-        return \Carbon\Carbon::parse($this->birth_date)->format('d/m/Y');
-    }
-
     // Muitos pra muitos: um professor ensina várias matérias
-    public function subjects()
+      public function subjects()
     {
-        return $this->belongsToMany(Subject::class)->withTimestamps();
+        return $this->belongsToMany(Subject::class, 'subject_teacher')
+            ->withPivot('school_class_id')
+            ->withTimestamps();
     }
 }
