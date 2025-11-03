@@ -16,61 +16,103 @@ class TeacherController extends Controller
 
     public function create()
     {
-        $subjects = Subject::all();
-        return view('teachers.create', compact('subjects'));
+        $qualificationLabels = Teacher::$qualificationLabels;
+        $defaultSubjects = Subject::defaultSubjects();
+        return view('teachers.create', compact('defaultSubjects', 'qualificationLabels'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
             'cpf' => 'required|string|max:11|unique:teachers',
             'birth_date' => 'required|date',
             'email' => 'required|email|unique:teachers',
-            'subjects' => 'array',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'hire_date' => 'nullable|date',
+            'qualification' => 'nullable|string|in:technical,licentiate,bachelor,postgraduate,master,doctorate',
+            'status' => 'in:active,inactive,on_leave',
         ]);
 
-        $teacher = Teacher::create($validated);
-        $created = $teacher->subjects()->sync($request->subjects ?? []);
+        $teacher = Teacher::create($request->only([
+            'name',
+            'cpf',
+            'birth_date',
+            'email',
+            'phone',
+            'address',
+            'hire_date',
+            'qualification',
+            'status'
+        ]));
 
-        if ($created) {
-            return redirect()->route('teachers.index')->with('success', 'Professor cadastrado!');
+        $subjectName = $request->input('subject_name');
+        if ($subjectName === 'new') {
+            $subjectName = $request->input('new_subject_name');
         }
-            return redirect()->back()->with('error', 'Erro ao cadastrar professor');
+
+        if ($subjectName) {
+            Subject::create([
+                'name' => $subjectName,
+                'code' => strtoupper(substr($subjectName, 0, 3)) . rand(100, 999),
+                'teacher_id' => $teacher->id,
+                'status' => 'active',
+            ]);
+        }
+
+        return redirect()->route('teachers.index')->with('success', 'Professor cadastrado com sucesso!');
     }
 
-    public function edit(Teacher $teacher)
+
+    public function edit($id)
     {
-        $subjects = Subject::all();
-        return view('teachers.edit', compact('teacher', 'subjects'));
+        $qualificationLabels = Teacher::$qualificationLabels;
+        $teacher = Teacher::with('subjects')->findOrFail($id);
+        $defaultSubjects = Subject::defaultSubjects();
+        return view('teachers.edit', compact('teacher', 'defaultSubjects', 'qualificationLabels'));
     }
 
-    public function update(Request $request, Teacher $teacher)
+    public function update(Request $request, $id)
     {
-        $validated = $request->validate([
+        $teacher = Teacher::findOrFail($id);
+
+        $request->validate([
             'name' => 'required|string|max:255',
             'cpf' => 'required|string|max:11|unique:teachers,cpf,' . $teacher->id,
             'birth_date' => 'required|date',
             'email' => 'required|email|unique:teachers,email,' . $teacher->id,
-            'subjects' => 'array',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:255',
+            'hire_date' => 'nullable|date',
+            'qualification' => 'nullable|string|in:technical,licentiate,bachelor,postgraduate,master,doctorate',
+            'status' => 'in:active,inactive,on_leave',
         ]);
 
-        $teacher->update($validated);
-        $updated = $teacher->subjects()->sync($request->subjects ?? []);
+        $teacher->update($request->all());
 
-        if ($updated) {
-            return redirect()->route('teachers.index')->with('success', 'Professor atualizado!');           
+        $subjectName = $request->subject_name === 'new'
+            ? $request->new_subject_name
+            : $request->subject_name;
+
+        if ($subjectName) {
+            $subject = Subject::firstOrCreate(
+                ['name' => $subjectName],
+                [
+                    'code' => strtoupper(substr($subjectName, 0, 3)) . rand(100, 999),
+                    'teacher_id' => $teacher->id,
+                    'status' => 'active',
+                ]
+            );
+            $subject->update(['teacher_id' => $teacher->id]);
         }
-            return redirect()->back()->with('error', 'Erro ao atualizar professor');
+
+        return redirect()->route('teachers.index')->with('success', 'Professor atualizado com sucesso!');
     }
 
     public function destroy(Teacher $teacher)
     {
-        $deleted = $teacher->delete();
-
-        if ($deleted) {
-            return redirect()->route('teachers.index')->with('success', 'Professor excluído!');           
-        }
-            return redirect()->back()->with('error', 'Erro ao excluir professor');
+        $teacher->delete();
+        return redirect()->route('teachers.index')->with('success', 'Professor excluído com sucesso!');
     }
 }
