@@ -18,7 +18,14 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->date('hire_date')->nullable();
             $table->enum('status', ['active', 'inactive', 'on_leave'])->default('active');
-            $table->string('qualification')->nullable();
+         $table->enum('qualification', [
+                'technical',      
+                'licentiate',     
+                'bachelor',       
+                'postgraduate', 
+                'master',            
+                'doctorate',      
+            ])->nullable();
             $table->timestamps();
         });
     }
