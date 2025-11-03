@@ -7,7 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 class Subject extends Model
 {
     protected $fillable = [
-        'name', 'code', 'description', 'workload', 'grade_level', 'status'
+        'name',
+        'code',
+        'workload',
+        'grade_level',
+        'status',
+        'teacher_id',
+        'is_default',
     ];
 
     public static $statusOptions = [
@@ -24,7 +30,30 @@ class Subject extends Model
     // Muitos pra muitos: uma matéria tem vários professores
     public function teachers()
     {
-        return $this->belongsToMany(Teacher::class)->withTimestamps();
+        return $this->belongsToMany(Teacher::class);
+    }
+
+    public function schoolClasses()
+    {
+        return $this->belongsToMany(SchoolClass::class);
+    }
+
+
+    public static function defaultSubjects()
+    {
+        return [
+            'Matemática',
+            'Português',
+            'História',
+            'Química',
+            'Física',
+            'Biologia',
+            'Educação Religiosa',
+            'Geografia',
+            'Ciências',
+            'Inglês',
+            'Artes',
+            'Educação Física',
+        ];
     }
 }
-

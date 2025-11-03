@@ -34,9 +34,23 @@ class Teacher extends Model
         return \Carbon\Carbon::parse($this->birth_date)->format('d/m/Y');
     }
 
+    public static $qualificationLabels = [
+        'technical' => 'Técnico',
+        'licentiate' => 'Licenciatura',
+        'bachelor' => 'Graduação',
+        'postgraduate' => 'Pós-Graduação',
+        'master' => 'Mestrado',
+        'doctorate' => 'Doutorado',
+    ];
+
+    public function getQualificationLabelAttribute()
+    {
+        return self::$qualificationLabels[$this->qualification] ?? 'Desconhecido';
+    }
+
     // Muitos pra muitos: um professor ensina várias matérias
     public function subjects()
     {
-        return $this->belongsToMany(Subject::class)->withTimestamps();
+        return $this->belongsToMany(Subject::class);
     }
 }
