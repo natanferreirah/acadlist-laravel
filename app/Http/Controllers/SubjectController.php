@@ -9,75 +9,91 @@ use Illuminate\Http\Request;
 
 class SubjectController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $turmas = SchoolClass::all();
-        $turmaId = $request->input('turma');
-
-        $subjects = Subject::with(['teachers' => function ($q) {
-            $q->withPivot('school_class_id');
-        }])->get();
-
-        if ($turmaId) {
-            $subjects = $subjects->filter(function ($subject) use ($turmaId) {
-                return $subject->teachers->contains(function ($teacher) use ($turmaId) {
-                    return $teacher->pivot->school_class_id == $turmaId;
-                });
-            });
-        }
-
-        return view('subjects.index', compact('subjects', 'turmas', 'turmaId'));
+        $subjects = Subject::with(['teachers', 'schoolClasses'])->get();
+        return view('subjects.index', compact('subjects'));
     }
 
     public function create()
     {
-        $materiasPadrao = ['Matemática', 'Português', 'História', 'Geografia', 'Ciências', 'Inglês'];
+        $defaultSubjects = Subject::$defaultSubjects; // Array fixo para o select
+        $departmentOptions = Subject::$departmentOptions;
         $teachers = Teacher::all();
-        $turmas = SchoolClass::all();
-
-        return view('subjects.create', compact('materiasPadrao', 'teachers', 'turmas'));
+        $schoolclasses = SchoolClass::all();
+        return view('subjects.create', compact('defaultSubjects', 'teachers', 'schoolclasses', 'departmentOptions'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
-            'teacher_id' => 'required|exists:teachers,id',
-            'school_class_id' => 'required|exists:school_classes,id',
+            'code' => 'nullable|string|max:255',
+            'workload' => 'nullable|integer',
+            'department' => 'nullable|string|max:255',
+            'status' => 'required|in:active,inactive',
+            'teachers' => 'array'
         ]);
 
-        $subject = Subject::firstOrCreate(['name' => $validated['name']]);
+        $subjectName = $request->name === 'other' ? $request->custom_subject : $request->name;
 
-        $subject->teachers()->attach($validated['teacher_id'], [
-            'school_class_id' => $validated['school_class_id']
+        $subject = Subject::create([
+            'name' => $subjectName,
+            'code' => $request->code,
+            'workload' => $request->workload,
+            'department' => $request->department,
+            'status' => $request->status
         ]);
+
+        // Relaciona professores
+        if ($request->has('teachers')) {
+            $subject->teachers()->sync($request->teachers);
+        }
 
         return redirect()->route('subjects.index')->with('success', 'Matéria criada com sucesso!');
     }
 
+    public function show(Subject $subject) {}
+
     public function edit(Subject $subject)
     {
+        $defaultSubjects = Subject::$defaultSubjects; // Array fixo para o select
+        $departmentOptions = Subject::$departmentOptions;
         $teachers = Teacher::all();
-        $turmas = SchoolClass::all();
-
-        return view('subjects.edit', compact('subject', 'teachers', 'turmas'));
+        $schoolclasses = SchoolClass::all();
+        return view('subjects.edit', compact('defaultSubjects', 'teachers', 'schoolclasses', 'subject', 'departmentOptions'));
     }
 
     public function update(Request $request, Subject $subject)
     {
-        $validated = $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
+            'code' => 'nullable|string|max:255',
+            'workload' => 'nullable|integer',
+            'department' => 'nullable|string|max:255',
+            'status' => 'required|in:active,inactive',
         ]);
 
-        $subject->update(['name' => $validated['name']]);
+        $subjectName = $request->name === 'other' ? $request->custom_subject : $request->name;
 
-        return redirect()->route('subjects.index')->with('success', 'Matéria atualizada!');
+        $subject->update([
+            'name' => $subjectName,
+            'code' => $request->code,
+            'workload' => $request->workload,
+            'department' => $request->department,
+            'status' => $request->status
+        ]);
+
+        // Atualiza relação de professores
+        $subject->teachers()->sync($request->teachers ?? []);
+
+        $subject->update($request->all());
+        return redirect()->route('subjects.index')->with('success', 'Matéria atualizada com sucesso!');
     }
 
     public function destroy(Subject $subject)
     {
         $subject->delete();
-
-        return redirect()->route('subjects.index')->with('success', 'Matéria excluída!');
+        return redirect()->route('subjects.index')->with('success', 'Matéria deletada com sucesso!');
     }
 }

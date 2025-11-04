@@ -11,66 +11,73 @@ class TeacherController extends Controller
     public function index()
     {
         $teachers = Teacher::with('subjects')->get();
-        return view('teachers.index', compact('teachers'));
+        $qualificationOptions = Teacher::$qualificationOptions; 
+        return view('teachers.index', compact('teachers', 'qualificationOptions'));
     }
 
     public function create()
     {
+        $qualificationOptions = Teacher::$qualificationOptions;
         $subjects = Subject::all();
-        return view('teachers.create', compact('subjects'));
+        return view('teachers.create', compact('qualificationOptions', 'subjects'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'cpf' => 'required|string|max:11|unique:teachers',
-            'birth_date' => 'required|date',
-            'email' => 'required|email|unique:teachers',
-            'subjects' => 'array',
+        $request->validate([
+            'name' => 'required|string',
+            'cpf' => 'required|string|unique:teachers,cpf',
+            'birth_date' => 'nullable|date',
+            'email' => 'required|email|unique:teachers,email',
+            'phone' => 'nullable|string',
+            'address' => 'nullable|string',
+            'hire_date' => 'nullable|date',
+            'status' => 'required|string',
+            'qualification' => 'required|string',
+            'subjects' => 'array'
         ]);
 
-        $teacher = Teacher::create($validated);
-        $created = $teacher->subjects()->sync($request->subjects ?? []);
+        $teacher = Teacher::create($request->except('subjects'));
 
-        if ($created) {
-            return redirect()->route('teachers.index')->with('success', 'Professor cadastrado!');
+        if ($request->has('subjects')) {
+            $teacher->subjects()->sync($request->subjects);
         }
-            return redirect()->back()->with('error', 'Erro ao cadastrar professor');
+
+        return redirect()->route('teachers.index')->with('success', 'Professor cadastrado com sucesso!');
     }
 
     public function edit(Teacher $teacher)
     {
+        $qualificationOptions = Teacher::$qualificationOptions;
         $subjects = Subject::all();
-        return view('teachers.edit', compact('teacher', 'subjects'));
+
+        return view('teachers.edit', compact('teacher', 'qualificationOptions', 'subjects'));
     }
 
     public function update(Request $request, Teacher $teacher)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'cpf' => 'required|string|max:11|unique:teachers,cpf,' . $teacher->id,
-            'birth_date' => 'required|date',
+        $request->validate([
+            'name' => 'required|string',
+            'cpf' => 'required|string|unique:teachers,cpf,' . $teacher->id,
+            'birth_date' => 'nullable|date',
             'email' => 'required|email|unique:teachers,email,' . $teacher->id,
-            'subjects' => 'array',
+            'phone' => 'nullable|string',
+            'address' => 'nullable|string',
+            'hire_date' => 'nullable|date',
+            'status' => 'required|string',
+            'qualification' => 'required|string',
+            'subjects' => 'array'
         ]);
 
-        $teacher->update($validated);
-        $updated = $teacher->subjects()->sync($request->subjects ?? []);
+        $teacher->update($request->except('subjects'));
+        $teacher->subjects()->sync($request->subjects ?? []);
 
-        if ($updated) {
-            return redirect()->route('teachers.index')->with('success', 'Professor atualizado!');           
-        }
-            return redirect()->back()->with('error', 'Erro ao atualizar professor');
+        return redirect()->route('teachers.index')->with('success', 'Professor atualizado com sucesso!');
     }
 
     public function destroy(Teacher $teacher)
     {
-        $deleted = $teacher->delete();
-
-        if ($deleted) {
-            return redirect()->route('teachers.index')->with('success', 'Professor excluído!');           
-        }
-            return redirect()->back()->with('error', 'Erro ao excluir professor');
+        $teacher->delete();
+        return redirect()->route('teachers.index')->with('success', 'Professor removido com sucesso!');
     }
 }
