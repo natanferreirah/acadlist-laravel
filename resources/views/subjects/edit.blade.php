@@ -1,102 +1,113 @@
-<div class="container mt-4">
-    <h2>Editar Matéria</h2>
 
-    @if ($errors->any())
-    <div class="alert alert-danger">
-        <ul class="mb-0">
-            @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-    </div>
-    @endif
+<div class="container">
+    <h1>Editar Matéria</h1>
 
-    <form action="{{ route('subjects.update', $subject->id) }}" method="POST">
+    @php
+        // Verifica se o nome da matéria não está nas padrões
+        $isCustom = isset($subject) && isset($defaultSubjects)
+            ? !in_array($subject->name, $defaultSubjects)
+            : false;
+    @endphp
+
+    <form method="POST" action="{{ route('subjects.update', $subject->id) }}">
         @csrf
         @method('PUT')
 
-        {{-- Nome da Matéria --}}
-        <div class="mb-3">
-            <label for="name" class="form-label">Nome da Matéria</label>
-            <input
-                type="text"
-                name="name"
-                id="name"
-                class="form-control"
-                value="{{ old('name', $subject->name) }}">
+        {{-- Nome da matéria --}}
+        <div>
+            <label>Nome da Matéria:</label>
+            <select id="subject_select" name="name" required>
+                <option value="">Selecione uma matéria</option>
+                @foreach($defaultSubjects as $subjectName)
+                    <option value="{{ $subjectName }}" {{ $subject->name == $subjectName ? 'selected' : '' }}>
+                        {{ $subjectName }}
+                    </option>
+                @endforeach
+                <option value="other" {{ $isCustom ? 'selected' : '' }}>Outra...</option>
+            </select>
+        </div>
+
+        {{-- Campo para nova matéria personalizada --}}
+        <div id="custom_subject_field"
+             @if($isCustom)
+                 style="margin-top:10px;"
+             @else
+                 style="display:none;margin-top:10px;"
+             @endif
+        >
+            <label>Nova Matéria:</label>
+            <input type="text" name="custom_subject" value="{{ $isCustom ? $subject->name : '' }}" placeholder="Digite o nome da nova matéria">
         </div>
 
         {{-- Código --}}
-        <div class="mb-3">
-            <label for="code" class="form-label">Código</label>
-            <input
-                type="text"
-                name="code"
-                id="code"
-                class="form-control"
-                value="{{ old('code', $subject->code) }}">
+        <div>
+            <label>Código:</label>
+            <input type="text" name="code" value="{{ old('code', $subject->code) }}">
         </div>
 
-        {{-- Professor --}}
-        <div class="mb-3">
-            <label for="teacher_id" class="form-label">Professor</label>
-            @if($subject->is_default)
-            <input
-                type="text"
-                class="form-control"
-                value="{{ $subject->teacher->name ?? '—' }}">
-            @else
-            <select name="teacher_id" id="teacher_id" class="form-select">
-                <option value="">Selecione o professor...</option>
-                @foreach($teachers as $teacher)
-                <option
-                    value="{{ $teacher->id }}"
-                    {{ $subject->teacher_id == $teacher->id ? 'selected' : '' }}>
-                    {{ $teacher->name }}
-                </option>
+        {{-- Carga Horária --}}
+        <div>
+            <label>Carga Horária:</label>
+            <input type="number" name="workload" value="{{ old('workload', $subject->workload) }}">
+        </div>
+
+        {{-- Departamento (select com opções fixas) --}}
+        <div>
+            <label>Departamento:</label>
+            <select name="department" required>
+                <option value="">-- Selecione --</option>
+                @foreach($departmentOptions as $key => $label)
+                    <option value="{{ $key }}" {{ old('department', $subject->department) == $key ? 'selected' : '' }}>
+                        {{ $label }}
+                    </option>
                 @endforeach
             </select>
-            @endif
         </div>
 
-        {{-- Carga Horária / Série / Status --}}
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <label for="workload" class="form-label">Carga Horária</label>
-                <input
-                    type="number"
-                    name="workload"
-                    id="workload"
-                    class="form-control"
-                    value="{{ old('workload', $subject->workload) }}">
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label for="grade_level" class="form-label">Série/Nível</label>
-                <input
-                    type="text"
-                    name="grade_level"
-                    id="grade_level"
-                    class="form-control"
-                    value="{{ old('grade_level', $subject->grade_level) }}">
-            </div>
-
-            <div class="col-md-4 mb-3">
-                <label for="status" class="form-label">Status</label>
-                <select name="status" id="status" class="form-select" {{ $subject->is_default ? 'disabled' : '' }}>
-                    <option value="active" {{ $subject->status == 'active' ? 'selected' : '' }}>Ativa</option>
-                    <option value="inactive" {{ $subject->status == 'inactive' ? 'selected' : '' }}>Inativa</option>
-                </select>
-                @if($subject->is_default)
-                <input type="hidden" name="status" value="{{ $subject->status }}">
-                @endif
-            </div>
+        {{-- Status --}}
+        <div>
+            <label>Status:</label>
+            <select name="status" required>
+                <option value="active" {{ $subject->status == 'active' ? 'selected' : '' }}>Ativa</option>
+                <option value="inactive" {{ $subject->status == 'inactive' ? 'selected' : '' }}>Inativa</option>
+            </select>
         </div>
 
-        {{-- Botão --}}
-        <div class="mt-3">
-            <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-            <a href="{{ route('subjects.index') }}" class="btn btn-secondary">Cancelar</a>
+        {{-- Professores --}}
+        <div>
+            <label>Professores:</label>
+            <select name="teachers[]" multiple>
+                @foreach($teachers as $teacher)
+                    <option value="{{ $teacher->id }}" {{ $subject->teachers->contains($teacher->id) ? 'selected' : '' }}>
+                        {{ $teacher->name }}
+                    </option>
+                @endforeach
+            </select>
+            <p style="font-size: 0.9em; color: #666;">(Segure CTRL para selecionar mais de um professor)</p>
         </div>
+
+        <button type="submit">Atualizar</button>
     </form>
 </div>
+
+<script>
+    // script simples para mostrar/esconder o campo customizado
+    (function(){
+        const select = document.getElementById('subject_select');
+        const customField = document.getElementById('custom_subject_field');
+        if (!select || !customField) return;
+
+        select.addEventListener('change', function() {
+            if (this.value === 'other') {
+                customField.style.display = 'block';
+                const input = customField.querySelector('input[name="custom_subject"]');
+                if (input) input.required = true;
+            } else {
+                customField.style.display = 'none';
+                const input = customField.querySelector('input[name="custom_subject"]');
+                if (input) input.required = false;
+            }
+        });
+    })();
+</script>
+

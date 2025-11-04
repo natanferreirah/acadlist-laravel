@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('subjects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('code')->unique();
-            $table->text('description')->nullable();
+            $table->string('code')->nullable();
             $table->integer('workload')->nullable();
-            $table->string('grade_level')->nullable();
+            $table->string('department')->nullable();
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->foreignId('teacher_id')->nullable()->constrained()->onDelete('set null');
             $table->boolean('is_default')->default(false);

@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('cpf')->unique();
             $table->date('birth_date');
             $table->string('email')->unique();
-            $table->string('phone')->nullable();
             $table->string('address')->nullable();
+            $table->string('phone')->nullable();
             $table->date('hire_date')->nullable();
             $table->enum('status', ['active', 'inactive', 'on_leave'])->default('active');
          $table->enum('qualification', [

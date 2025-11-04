@@ -29,25 +29,13 @@ class Teacher extends Model
         $this->attributes['cpf'] = preg_replace('/\D/', '', $value); // remove tudo que não é número
     }
 
-    public function getBirthDateFormattedAttribute()
-    {
-        return \Carbon\Carbon::parse($this->birth_date)->format('d/m/Y');
-    }
-
-    public static $qualificationLabels = [
-        'technical' => 'Técnico',
-        'licentiate' => 'Licenciatura',
-        'bachelor' => 'Graduação',
-        'postgraduate' => 'Pós-Graduação',
+    public static $qualificationOptions = [
+        'license' => 'Licenciatura',
+        'bachelor' => 'Bacharelado',
+        'postgraduate ' => 'Pós-graduação',
         'master' => 'Mestrado',
         'doctorate' => 'Doutorado',
     ];
-
-    public function getQualificationLabelAttribute()
-    {
-        return self::$qualificationLabels[$this->qualification] ?? 'Desconhecido';
-    }
-
     // Muitos pra muitos: um professor ensina várias matérias
     public function subjects()
     {

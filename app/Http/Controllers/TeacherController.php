@@ -11,54 +11,36 @@ class TeacherController extends Controller
     public function index()
     {
         $teachers = Teacher::with('subjects')->get();
-        return view('teachers.index', compact('teachers'));
+        $qualificationOptions = Teacher::$qualificationOptions; 
+        return view('teachers.index', compact('teachers', 'qualificationOptions'));
     }
 
     public function create()
     {
-        $qualificationLabels = Teacher::$qualificationLabels;
-        $defaultSubjects = Subject::defaultSubjects();
-        return view('teachers.create', compact('defaultSubjects', 'qualificationLabels'));
+        $qualificationOptions = Teacher::$qualificationOptions;
+        $subjects = Subject::all();
+        return view('teachers.create', compact('qualificationOptions', 'subjects'));
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
-            'cpf' => 'required|string|max:11|unique:teachers',
-            'birth_date' => 'required|date',
-            'email' => 'required|email|unique:teachers',
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
+            'name' => 'required|string',
+            'cpf' => 'required|string|unique:teachers,cpf',
+            'birth_date' => 'nullable|date',
+            'email' => 'required|email|unique:teachers,email',
+            'phone' => 'nullable|string',
+            'address' => 'nullable|string',
             'hire_date' => 'nullable|date',
-            'qualification' => 'nullable|string|in:technical,licentiate,bachelor,postgraduate,master,doctorate',
-            'status' => 'in:active,inactive,on_leave',
+            'status' => 'required|string',
+            'qualification' => 'required|string',
+            'subjects' => 'array'
         ]);
 
-        $teacher = Teacher::create($request->only([
-            'name',
-            'cpf',
-            'birth_date',
-            'email',
-            'phone',
-            'address',
-            'hire_date',
-            'qualification',
-            'status'
-        ]));
+        $teacher = Teacher::create($request->except('subjects'));
 
-        $subjectName = $request->input('subject_name');
-        if ($subjectName === 'new') {
-            $subjectName = $request->input('new_subject_name');
-        }
-
-        if ($subjectName) {
-            Subject::create([
-                'name' => $subjectName,
-                'code' => strtoupper(substr($subjectName, 0, 3)) . rand(100, 999),
-                'teacher_id' => $teacher->id,
-                'status' => 'active',
-            ]);
+        if ($request->has('subjects')) {
+            $teacher->subjects()->sync($request->subjects);
         }
 
         return redirect()->route('teachers.index')->with('success', 'Professor cadastrado com sucesso!');
@@ -67,45 +49,29 @@ class TeacherController extends Controller
 
     public function edit($id)
     {
-        $qualificationLabels = Teacher::$qualificationLabels;
-        $teacher = Teacher::with('subjects')->findOrFail($id);
-        $defaultSubjects = Subject::defaultSubjects();
-        return view('teachers.edit', compact('teacher', 'defaultSubjects', 'qualificationLabels'));
+        $qualificationOptions = Teacher::$qualificationOptions;
+        $subjects = Subject::all();
+
+        return view('teachers.edit', compact('teacher', 'qualificationOptions', 'subjects'));
     }
 
     public function update(Request $request, $id)
     {
-        $teacher = Teacher::findOrFail($id);
-
         $request->validate([
-            'name' => 'required|string|max:255',
-            'cpf' => 'required|string|max:11|unique:teachers,cpf,' . $teacher->id,
-            'birth_date' => 'required|date',
+            'name' => 'required|string',
+            'cpf' => 'required|string|unique:teachers,cpf,' . $teacher->id,
+            'birth_date' => 'nullable|date',
             'email' => 'required|email|unique:teachers,email,' . $teacher->id,
-            'phone' => 'nullable|string|max:20',
-            'address' => 'nullable|string|max:255',
+            'phone' => 'nullable|string',
+            'address' => 'nullable|string',
             'hire_date' => 'nullable|date',
-            'qualification' => 'nullable|string|in:technical,licentiate,bachelor,postgraduate,master,doctorate',
-            'status' => 'in:active,inactive,on_leave',
+            'status' => 'required|string',
+            'qualification' => 'required|string',
+            'subjects' => 'array'
         ]);
 
-        $teacher->update($request->all());
-
-        $subjectName = $request->subject_name === 'new'
-            ? $request->new_subject_name
-            : $request->subject_name;
-
-        if ($subjectName) {
-            $subject = Subject::firstOrCreate(
-                ['name' => $subjectName],
-                [
-                    'code' => strtoupper(substr($subjectName, 0, 3)) . rand(100, 999),
-                    'teacher_id' => $teacher->id,
-                    'status' => 'active',
-                ]
-            );
-            $subject->update(['teacher_id' => $teacher->id]);
-        }
+        $teacher->update($request->except('subjects'));
+        $teacher->subjects()->sync($request->subjects ?? []);
 
         return redirect()->route('teachers.index')->with('success', 'Professor atualizado com sucesso!');
     }
@@ -113,6 +79,6 @@ class TeacherController extends Controller
     public function destroy(Teacher $teacher)
     {
         $teacher->delete();
-        return redirect()->route('teachers.index')->with('success', 'Professor excluído com sucesso!');
+        return redirect()->route('teachers.index')->with('success', 'Professor removido com sucesso!');
     }
 }

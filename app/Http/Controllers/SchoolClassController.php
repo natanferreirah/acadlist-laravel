@@ -12,8 +12,8 @@ class SchoolClassController extends Controller
      */
     public function index()
     {
-        $schoolClasses = SchoolClass::all();
-        return view('schoolClasses.index', compact('schoolClasses'));
+        $schoolclasses = SchoolClass::all();
+        return view('schoolclasses.index', compact('schoolclasses'));
     }
 
     /**
@@ -22,7 +22,7 @@ class SchoolClassController extends Controller
     public function create()
     {
         $shiftOptions = SchoolClass::$shiftOptions;
-        return view('schoolClasses.create', compact('shiftOptions'));  
+        return view('schoolclasses.create', compact('shiftOptions'));  
     }
 
     /**
@@ -50,7 +50,7 @@ class SchoolClassController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(SchoolClass $schoolClass)
+    public function show(SchoolClass $schoolclass)
     {
         //
     }
@@ -58,16 +58,16 @@ class SchoolClassController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(SchoolClass $schoolClass)
+    public function edit(SchoolClass $schoolclass)
     {
         $shiftOptions = SchoolClass::$shiftOptions;
-        return view('schoolClasses.edit', compact('schoolClass', 'shiftOptions'));
+        return view('schoolclasses.edit', compact('schoolclass', 'shiftOptions'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, SchoolClass $schoolClass)
+    public function update(Request $request, SchoolClass $schoolclass)
     {
             $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -77,7 +77,7 @@ class SchoolClassController extends Controller
             'grade' => 'required',
         ]);
 
-        $updated = $schoolClass->update($validated);
+        $updated = $schoolclass->update($validated);
 
         if($updated){
             return redirect()->route('school-classes.index')->with('sucess', 'Turma atualizada com sucesso');
@@ -89,9 +89,9 @@ class SchoolClassController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(SchoolClass $schoolClass)
+    public function destroy(SchoolClass $schoolclass)
     {
-        $deleted = $schoolClass->delete();
+        $deleted = $schoolclass->delete();
 
         if ($deleted) {
             return redirect()->route('school-classes.index')->with('sucess', 'Turma excluída com sucesso');

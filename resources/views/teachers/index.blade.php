@@ -1,65 +1,41 @@
-<div class="container mt-4">
-    <h2>Professores Cadastrados</h2>
+<h1>Professores</h1>
 
-    <a href="{{ route('teachers.create') }}" class="btn btn-primary mb-3">Novo Professor</a>
+<a href="{{ route('teachers.create') }}">Novo Professor</a>
 
-    @if(session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
-
-    @if($teachers->isEmpty())
-    <p>Nenhum professor cadastrado.</p>
-    @else
-    <table class="table table-bordered table-striped table-sm">
-        <thead>
+<table border="1" cellpadding="8">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Qualificação</th>
+            <th>Status</th>
+            <th>Matérias</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach($teachers as $teacher)
             <tr>
-                <th>#</th>
-                <th>Nome</th>
-                <th>CPF</th>
-                <th>Email</th>
-                <th>Telefone</th>
-                <th>Endereço</th>
-                <th>Data Nasc.</th>
-                <th>Data Contratação</th>
-                <th>Formação</th>
-                <th>Matéria</th>
-                <th>Status</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($teachers as $teacher)
-            <tr>
-                <td>{{ $teacher->id }}</td>
                 <td>{{ $teacher->name }}</td>
-                <td>{{ $teacher->cpf }}</td>
                 <td>{{ $teacher->email }}</td>
-                <td>{{ $teacher->phone ?? '—' }}</td>
-                <td>{{ $teacher->address ?? '—' }}</td>
-                <td>{{ $teacher->birth_date }}</td>
-                <td>{{ $teacher->hire_date ?? '—' }}</td>
-                <td> {{ $teacher->qualification_label }}</td>
-                <td>{{ $teacher->subjects->first()->name ?? 'Sem matéria' }}</td>
+                <td>{{$qualificationOptions[$teacher->qualification] ?? $teacher->qualification}}</td>
+                <td>{{ $teacher->status === 'active' ? 'Ativo' : 'Inativo' }}</td>
                 <td>
-                    @if($teacher->status == 'active')
-                    <span class="badge bg-success">Ativo</span>
-                    @elseif($teacher->status == 'inactive')
-                    <span class="badge bg-secondary">Inativo</span>
-                    @else
-                    <span class="badge bg-warning text-dark">Em Licença</span>
-                    @endif
+                    @forelse($teacher->subjects as $subject)
+                        {{ $subject->name }}@if(!$loop->last), @endif
+                    @empty
+                        Nenhuma
+                    @endforelse
                 </td>
                 <td>
-                    <a href="{{ route('teachers.edit', $teacher->id) }}" class="btn btn-sm btn-warning">Editar</a>
-                    <form action="{{ route('teachers.destroy', $teacher->id) }}" method="POST" class="d-inline">
+                    <a href="{{ route('teachers.edit', $teacher->id) }}">Editar</a> |
+                    <form action="{{ route('teachers.destroy', $teacher->id) }}" method="POST" style="display:inline">
                         @csrf
                         @method('DELETE')
-                        <button class="btn btn-sm btn-danger" onclick="return confirm('Deseja excluir este professor?')">Excluir</button>
+                        <button type="submit" onclick="return confirm('Excluir este professor?')">Excluir</button>
                     </form>
                 </td>
             </tr>
-            @endforeach
-        </tbody>
-    </table>
-    @endif
-</div>
+        @endforeach
+    </tbody>
+</table>

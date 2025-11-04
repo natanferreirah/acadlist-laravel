@@ -8,8 +8,8 @@
 <body>
     <h1>Turmas</h1>
     <a href="{{route('school-classes.create')}}">Cadastrar</a>
-    @foreach($schoolClasses as $s)
-        <table>
+    @foreach($schoolclasses as $s)
+        <table style="text-align: center; border: 1px solid black; border-collapse: collapse; width: 800px;">
             <tr>
                 <th>ID</th>
                 <th>Nome</th>
