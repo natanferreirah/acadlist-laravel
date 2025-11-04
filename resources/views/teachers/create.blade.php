@@ -1,42 +1,48 @@
-<h1>Cadastrar Professor</h1>
+<h1>Novo Professor</h1>
 
 <form action="{{ route('teachers.store') }}" method="POST">
-@csrf
-<label>Nome:</label>
-<input type="text" name="name" value="{{ old('name') }}" required><br>
+    @csrf
 
-<label>CPF:</label>
-<input type="text" name="cpf" id="cpf" value="{{ old('cpf') }}" required><br>
+    <label>Nome:</label>
+    <input type="text" name="name" value="{{ old('name') }}" required><br>
 
-<script>
-const cpfInput = document.getElementById('cpf');
+    <label>CPF:</label>
+    <input type="text" name="cpf" maxlength="11" value="{{ old('cpf') }}" required><br>
 
-cpfInput.addEventListener('input', function(e) {
-    let value = this.value.replace(/\D/g,''); // remove tudo que não é número
-    if(value.length > 11) value = value.slice(0,11);
+    <label>Data de Nascimento:</label>
+    <input type="date" name="birth_date" value="{{ old('birth_date') }}"><br>
 
-    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-    value = value.replace(/(\d{3})(\d)/, '$1.$2');
-    value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    <label>Email:</label>
+    <input type="email" name="email" value="{{ old('email') }}" required><br>
 
-    this.value = value;
-});
-</script>
+    <label>Telefone:</label>
+    <input type="text" name="phone" maxlength="10" value="{{ old('phone') }}"><br>
 
-<label>Data Nasc.:</label>
-<input type="date" name="birth_date" id="birth_date" value="{{ old('birth_date') }}" required><br>
-</script>
+    <label>Endereço:</label>
+    <input type="text" name="address" value="{{ old('address') }}"><br>
 
+    <label>Data de Contratação:</label>
+    <input type="date" name="hire_date" value="{{ old('hire_date') }}"><br>
 
-<label>Email:</label>
-<input type="email" name="email" value="{{ old('email') }}" required><br>
+    <label>Status:</label>
+    <select name="status">
+        <option value="active">Ativo</option>
+        <option value="inactive">Inativo</option>
+    </select><br>
 
-<label>Matérias:</label>
-<select name="subjects[]">
-@foreach($subjects as $subject)
-    <option value="{{ $subject->id }}">{{ $subject->name }} - {{ $subject->code }}</option>
-@endforeach
-</select>
+    <label>Qualificação:</label>
+    <select name="qualification" required>
+        @foreach($qualificationOptions as $key => $value)
+            <option value="{{ $key }}">{{ $value }}</option>
+        @endforeach
+    </select><br>
 
-<input type="submit" value="Cadastrar">
+    <label>Matérias que Leciona:</label><br>
+    <select name="subjects[]" multiple>
+        @foreach($subjects as $subject)
+            <option value="{{ $subject->id }}">{{ $subject->name }}</option>
+        @endforeach
+    </select><br>
+
+    <button type="submit">Salvar</button>
 </form>
