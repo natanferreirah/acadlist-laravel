@@ -10,10 +10,12 @@ class SchoolClass extends Model
         'name',
         'assigned_room',
         'shift',
-        'school_year',
         'grade',
+        'school_year',
+        'series',
+        'weekly_workload_limit'
     ];
-    
+
     public static $shiftOptions = [
         'morning' => 'Manhã',
         'afternoon' => 'Tarde',
@@ -25,16 +27,21 @@ class SchoolClass extends Model
     {
         return self::$shiftOptions[$this->shift] ?? 'Desconhecido';
     }
-    
+
     public function students()
     {
         return $this->hasMany(Student::class);
     }
 
-     public function subjects()
+    public function subjects()
     {
-        return $this->belongsToMany(Subject::class, 'subject_teacher')
-            ->withPivot('teacher_id')
+        return $this->belongsToMany(Subject::class, 'school_class_subject')
+            ->withPivot('teacher_id', 'workload')
             ->withTimestamps();
+    }
+
+    public function currentWeeklyWorkload()
+    {
+        return $this->subjects()->sum('school_class_subject.workload');
     }
 }

@@ -28,11 +28,17 @@ class Teacher extends Model
     {
         $this->attributes['cpf'] = preg_replace('/\D/', '', $value); // remove tudo que não é número
     }
+
+    public static $qualificationOptions = [
+        'license' => 'Licenciatura',
+        'bachelor' => 'Bacharelado',
+        'postgraduate ' => 'Pós-graduação',
+        'master' => 'Mestrado',
+        'doctorate' => 'Doutorado',
+    ];
     // Muitos pra muitos: um professor ensina várias matérias
-      public function subjects()
+    public function subjects()
     {
-        return $this->belongsToMany(Subject::class, 'subject_teacher')
-            ->withPivot('school_class_id')
-            ->withTimestamps();
+        return $this->belongsToMany(Subject::class);
     }
 }
