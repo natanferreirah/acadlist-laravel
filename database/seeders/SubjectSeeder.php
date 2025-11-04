@@ -2,30 +2,20 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Subject;
+use Illuminate\Database\Seeder;
 
 class SubjectSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
-    {
-        $materiasPadrao = [
-            'Matemática',
-            'Português',
-            'História',
-            'Geografia',
-            'Ciências',
-            'Inglês',
-            'Educação Física',
-            'Artes',
-            'Ensino Religioso'
-        ];
-
-        foreach ($materiasPadrao as $nome) {
-            Subject::firstOrCreate(['name' => $nome]);
-        }
+    {   
+        Subject::create([
+            'name' => 'Matemática',
+            'code' => 'MAT01',
+            'workload' => 40,
+            'department' => 'Exatas',
+            'status' => 'active',
+        ]);
+        // Adicione mais
     }
 }
