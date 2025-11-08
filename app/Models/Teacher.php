@@ -32,10 +32,11 @@ class Teacher extends Model
     public static $qualificationOptions = [
         'license' => 'Licenciatura',
         'bachelor' => 'Bacharelado',
-        'postgraduate ' => 'Pós-graduação',
+        'postgraduate' => 'Pós-graduação',
         'master' => 'Mestrado',
         'doctorate' => 'Doutorado',
     ];
+
     // Muitos pra muitos: um professor ensina várias matérias
     public function subjects()
     {
