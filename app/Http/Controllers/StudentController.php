@@ -10,7 +10,7 @@ class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::with('schoolClass')->get();
+        $students = Student::with('schoolclass')->get();
         return view('students.index', compact('students'));
     }
 
@@ -45,10 +45,10 @@ class StudentController extends Controller
 
     public function edit(Student $student)
     {
-        $schoolclasses = SchoolClass::all();
+        $schoolClasses = SchoolClass::all();
         $student->id;
 
-        return view('students.edit',  compact('student', 'schoolclasses'));
+        return view('students.edit',  compact('student', 'schoolClasses'));
     }
 
     public function update(Request $request, Student $student)
