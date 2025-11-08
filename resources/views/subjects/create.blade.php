@@ -25,12 +25,12 @@
 
         <div class="mb-4">
             <label class="block font-semibold">Código</label>
-            <input type="text" name="code" class="border rounded p-2 w-50">
+            <input type="text" name="code" class="border rounded p-2 w-50" placeholder="Ex: MAT">
         </div>
 
         <div class="mb-4">
             <label class="block font-semibold">Carga Horária</label>
-            <input type="number" name="workload" class="border rounded p-2 w-50">
+            <input type="number" name="workload" class="border rounded p-2 w-50" placeholder="Ex: 20">
         </div>
 
         <div class="mb-4">

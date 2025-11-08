@@ -28,7 +28,7 @@
                 <td>{{ $subject->id }}</td>
                 <td>{{ $subject->display_name }}</td>
                 <td>{{ $subject->code }}</td>
-                <td>{{ $subject->workload }}</td>
+                <td>{{ $subject->workload }}h</td>
                 <td>{{ $subject->department_options }}</td>
                 <td>
                     @if($subject->teachers->isNotEmpty())

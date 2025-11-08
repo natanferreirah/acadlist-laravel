@@ -34,8 +34,8 @@
 
     <label>Qualificação:</label>
     <select name="qualification" required>
-        @foreach($qualificationOptions as $key => $value)
-            <option value="{{ $key }}" {{ $teacher->qualification === $key ? 'selected' : '' }}>{{ $value }}</option>
+        @foreach($qualificationOptions as $key => $label)
+            <option value="{{ $key }}" {{ $teacher->qualification === $key ? 'selected' : '' }}>{{ $label }}</option>
         @endforeach
     </select><br>
 
