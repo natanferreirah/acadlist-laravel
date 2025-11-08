@@ -26,9 +26,9 @@
             <td>{{ $student->name }}</td>
             <td>{{ $student->cpf }}</td>
             <td>{{ $student->birth_date }}</td>
-            <td>{{ $student->schoolClass->name ?? 'Sem turma'}}</td>
-            <td>{{ $student->schoolClass->grade ?? '-'}}</td>
-            <td>{{ $student->schoolClass->shift_label ?? '-'}}</td>
+            <td>{{ $student->schoolclass->name ?? 'Sem turma'}}</td>
+            <td>{{ $student->schoolclass->grade ?? '-'}}</td>
+            <td>{{ $student->schoolclass->shift_label ?? '-'}}</td>
             <td><a href="{{route('students.edit', $student->id)}}">Editar</a></td>
             <td>
                 <form action="{{ route('students.destroy', $student->id) }}" method="post">
