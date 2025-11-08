@@ -47,15 +47,15 @@ class TeacherController extends Controller
     }
 
 
-    public function edit($id)
+    public function edit(Teacher $teacher)
     {
-        $qualificationOptions = Teacher::$qualificationOptions;
+        $qualificationOptions = Teacher::$qualificationOptions; 
         $subjects = Subject::all();
 
         return view('teachers.edit', compact('teacher', 'qualificationOptions', 'subjects'));
     }
 
-    public function update(Request $request, $teacher)
+    public function update(Request $request, Teacher $teacher)
     {
         $request->validate([
             'name' => 'required|string',
