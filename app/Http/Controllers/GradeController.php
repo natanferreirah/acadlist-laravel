@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use App\Models\Grade;
 use App\Models\Student;
 use App\Models\Subject;
@@ -13,6 +14,23 @@ class GradeController extends Controller
 {
     public function index(Request $request)
     {
+        $user = Auth::user();
+
+        if (!$user) {
+            abort(403, 'Usuário não autenticado.');
+        }
+
+        if ($user->role === 'teacher') {
+            $teacher = $user->teacher;
+
+            if (!$teacher) {
+                abort(403, 'Professor não vinculado ao usuário.');
+            }
+
+            $grades = Grade::where('teacher_id', $teacher->id)->get();
+        } else {
+            $grades = Grade::all();
+        }
         $schoolClasses = SchoolClass::all();
         $subjects = Subject::all();
         $teachers = Teacher::all();
