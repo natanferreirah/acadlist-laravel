@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@section('content')
+<x-app-layout>
 <div class="max-w-4xl mx-auto bg-white shadow p-6 rounded-2xl">
     <h1 class="text-2xl font-bold mb-6">Adicionar Nova Matéria</h1>
 
@@ -81,4 +79,4 @@
         }
     });
 </script>
-@endsection
+</x-app-layout>

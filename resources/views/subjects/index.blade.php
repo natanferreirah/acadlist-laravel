@@ -1,8 +1,10 @@
-@extends('layouts.app')
-
-@section('content')
+<x-app-layout>
 <div class="container">
-    <h1>Matérias</h1>
+      <x-slot name="header">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                Matérias
+            </h2>
+        </x-slot>
     <a href="{{ route('subjects.create') }}" class="btn btn-primary">+ Nova Matéria</a>
 
     @if(session('success'))
@@ -55,4 +57,4 @@
         </tbody>
     </table>
 </div>
-@endsection
+</x-app-layout>

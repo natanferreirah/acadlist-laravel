@@ -1,14 +1,17 @@
-@extends('layouts.app')
-
-@section('content')
-<div class="max-w-7xl mx-auto bg-white p-6 rounded shadow">
-    <h1 class="text-2xl font-bold mb-6">Lançamento de Notas</h1>
+<x-app-layout>
+<div class="max-w-7xl mx-auto bg-white p-6 rounded shadow mt-10">
+    
+      <x-slot name="header">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                Notas
+            </h2>
+        </x-slot>
 
     {{-- FILTROS --}}
     <form method="GET" action="{{ route('grades.index') }}" class="flex flex-wrap gap-4 mb-6">
         <div>
             <label class="block text-sm font-medium text-gray-700">Turma:</label>
-            <select name="class" class="border rounded p-2">
+            <select name="class" class="border rounded p-2 w-40">
                 <option value="">Selecione</option>
                 @foreach($schoolClasses as $class)
                     <option value="{{ $class->id }}" {{ $selectedClass == $class->id ? 'selected' : '' }}>
@@ -20,7 +23,7 @@
 
         <div>
             <label class="block text-sm font-medium text-gray-700">Matéria:</label>
-            <select name="subject" class="border rounded p-2">
+            <select name="subject" class="border rounded p-2 w-40">
                 <option value="">Selecione</option>
                 @foreach($subjects as $subject)
                     <option value="{{ $subject->id }}" {{ $selectedSubject == $subject->id ? 'selected' : '' }}>
@@ -32,7 +35,7 @@
 
         <div>
             <label class="block text-sm font-medium text-gray-700">Professor:</label>
-            <select name="teacher" class="border rounded p-2">
+            <select name="teacher" class="border rounded p-2 w-40">
                 <option value="">Selecione</option>
                 @foreach($teachers as $teacher)
                     <option value="{{ $teacher->id }}" {{ $selectedTeacher == $teacher->id ? 'selected' : '' }}>
@@ -42,7 +45,7 @@
             </select>
         </div>
 
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button type="submit" class="bg-blue-600 text-white px-2 py-1 rounded my-auto  hover:bg-blue-700">
             Filtrar
         </button>
     </form>
@@ -108,4 +111,4 @@
         <p class="text-gray-600 mt-4">Selecione uma turma e uma matéria para visualizar os alunos.</p>
     @endif
 </div>
-@endsection
+</x-app-layout>

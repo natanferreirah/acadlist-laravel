@@ -1,12 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acadlist - Turmas</title>
-</head>
+<x-app-layout>
+
 <body>
-    <h1>Turmas</h1>
+      <x-slot name="header">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                Turmas
+            </h2>
+        </x-slot>
     <a href="{{route('school-classes.create')}}">Cadastrar</a>
     @foreach($schoolclasses as $s)
         <table style="text-align: center; border: 1px solid black; border-collapse: collapse; width: 800px;">
@@ -38,3 +37,4 @@
     @endforeach
 </body>
 </html>
+</x-app-layout>

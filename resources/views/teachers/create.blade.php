@@ -1,48 +1,69 @@
-<h1>Novo Professor</h1>
+<x-app-layout>
+<div class="max-w-4xl mx-auto mt-8 p-6 bg-white rounded-2xl shadow">
+    <h1 class="text-2xl font-bold mb-6">Cadastrar Professor</h1>
 
-<form action="{{ route('teachers.store') }}" method="POST">
-    @csrf
+    <form action="{{ route('teachers.store') }}" method="POST" class="space-y-4">
+        @csrf
 
-    <label>Nome:</label>
-    <input type="text" name="name" value="{{ old('name') }}" required><br>
+        <div>
+            <label for="name" class="block text-gray-700">Nome</label>
+            <input type="text" name="name" class="w-full border-gray-300 rounded-lg" required>
+        </div>
 
-    <label>CPF:</label>
-    <input type="text" name="cpf" maxlength="11" value="{{ old('cpf') }}" required><br>
+        <div>
+            <label for="cpf" class="block text-gray-700">CPF</label>
+            <input type="text" name="cpf" class="w-full border-gray-300 rounded-lg" maxlength="11" required>
+        </div>
 
-    <label>Data de Nascimento:</label>
-    <input type="date" name="birth_date" value="{{ old('birth_date') }}"><br>
+        <div>
+            <label for="email" class="block text-gray-700">E-mail</label>
+            <input type="email" name="email" class="w-full border-gray-300 rounded-lg" required>
+        </div>
 
-    <label>Email:</label>
-    <input type="email" name="email" value="{{ old('email') }}" required><br>
+        <div>
+            <label for="birth_date" class="block text-gray-700" id="birth_date">Data de Aniversário</label>
+            <input type="date" id="birth_date" class="w-full border-gray-300 rounded-lg">
+        </div>
 
-    <label>Telefone:</label>
-    <input type="text" name="phone" maxlength="10" value="{{ old('phone') }}"><br>
+        <div>
+            <label for="hire_date" class="block text-gray-700" id="hire_date">Data de Contratação</label>
+            <input type="date" id="hire_date" class="w-full border-gray-300 rounded-lg">
+        </div>
 
-    <label>Endereço:</label>
-    <input type="text" name="address" value="{{ old('address') }}"><br>
+        <div>
+            <label for="status" class="block text-gray-700">Status</label>
+            <select name="status" class="w-full border-gray-300 rounded-lg">
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+            </select>
+        </div>
 
-    <label>Data de Contratação:</label>
-    <input type="date" name="hire_date" value="{{ old('hire_date') }}"><br>
 
-    <label>Status:</label>
-    <select name="status">
-        <option value="active">Ativo</option>
-        <option value="inactive">Inativo</option>
-    </select><br>
+        <div>
+            <label for="" class="block text-gray-700">Qualificação</label>
+            <select name="qualification" class="w-full border-gray-300 rounded-lg">
+                @foreach($qualificationOptions as $option)
+                    <option value="{{ $option }}">{{ $option }}</option>
+                @endforeach
+            </select>
+        </div>
 
-    <label>Qualificação:</label>
-    <select name="qualification" required>
-        @foreach($qualificationOptions as $key => $label)
-            <option value="{{ $key }}">{{ $label }}</option>
-        @endforeach
-    </select><br>
+        <div>
+            <label for="" class="block text-gray-700">Matérias</label>
+            <div class="grid grid-cols-2 gap-2">
+                @foreach($subjects as $subject)
+                    <label class="flex items-center space-x-2">
+                        <input type="checkbox" name="subjects[]" value="{{ $subject->id }}">
+                        <span>{{ $subject->name }}</span>
+                    </label>
+                @endforeach
+            </div>
+        </div>
 
-    <label>Matérias que Leciona:</label><br>
-    <select name="subjects[]" multiple>
-        @foreach($subjects as $subject)
-            <option value="{{ $subject->id }}">{{ $subject->name }}</option>
-        @endforeach
-    </select><br>
-
-    <button type="submit">Salvar</button>
-</form>
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
+            Salvar
+        </button>
+        <a href="{{ route('teachers.index') }}" class="ml-2 text-gray-600 hover:underline">Cancelar</a>
+    </form>
+</div>
+</x-app-layout>
