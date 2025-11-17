@@ -1,63 +1,169 @@
 <x-app-layout>
-<div class="max-w-4xl mx-auto mt-8 p-6 bg-white rounded-2xl shadow">
-    <h1 class="text-2xl font-bold mb-6">Editar Professor</h1>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            Editar Professor
+        </h2>
+    </x-slot>
 
-    <form action="{{ route('teachers.update', $teacher) }}" method="POST" class="space-y-4">
-        @csrf
-        @method('PUT')
+    <div class="py-6">
+        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    @if ($errors->any())
+                    <div class="mb-4 p-4 bg-red-100 text-red-800 rounded-lg">
+                        <ul class="list-disc list-inside">
+                            @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                    @endif
 
-        <div>
-            <label class="block text-gray-700">Nome</label>
-            <input type="text" name="name" value="{{ $teacher->name }}" class="w-full border-gray-300 rounded-lg" required>
-        </div>
+                    <form action="{{ route('teachers.update', $teacher) }}" method="POST" class="space-y-6">
+                        @csrf
+                        @method('PUT')
 
-        <div>
-            <label class="block text-gray-700">CPF</label>
-            <input type="text" name="cpf" value="{{ $teacher->cpf }}" class="w-full border-gray-300 rounded-lg" required>
-        </div>
+                        <!-- Nome -->
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
+                            <input type="text" 
+                                   id="name" 
+                                   name="name" 
+                                   value="{{ old('name', $teacher->name) }}"
+                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                                   required>
+                        </div>
 
-        <div>
-            <label class="block text-gray-700">E-mail</label>
-            <input type="email" name="email" value="{{ $teacher->email }}" class="w-full border-gray-300 rounded-lg" required>
-        </div>
+                        <!-- CPF -->
+                        <div>
+                            <label for="cpf" class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
+                            <input type="text" 
+                                   id="cpf" 
+                                   name="cpf" 
+                                   value="{{ old('cpf', $teacher->cpf) }}"
+                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                                   placeholder="000.000.000-00"
+                                   maxlength="14" 
+                                   required>
+                        </div>
 
-        <div>
-            <label class="block text-gray-700">Status</label>
-            <select name="status" class="w-full border-gray-300 rounded-lg">
-                <option value="ativo" {{ $teacher->status === 'ativo' ? 'selected' : '' }}>Ativo</option>
-                <option value="inativo" {{ $teacher->status === 'inativo' ? 'selected' : '' }}>Inativo</option>
-            </select>
-        </div>
+                        <!-- Email -->
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">E-mail *</label>
+                            <input type="email" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{ old('email', $teacher->email) }}"
+                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                                   required>
+                        </div>
 
-        <div>
-            <label class="block text-gray-700">Qualificação</label>
-            <select name="qualification" class="w-full border-gray-300 rounded-lg">
-                @foreach($qualificationOptions as $option)
-                    <option value="{{ $option }}" {{ $teacher->qualification === $option ? 'selected' : '' }}>
-                        {{ $option }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
+                        <!-- Telefone -->
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+                            <input type="text" 
+                                   id="phone" 
+                                   name="phone" 
+                                   value="{{ old('phone', $teacher->phone) }}"
+                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                                   placeholder="(00) 00000-0000">
+                        </div>
 
-        <div>
-            <label class="block text-gray-700">Matérias</label>
-            <div class="grid grid-cols-2 gap-2">
-                @foreach($subjects as $subject)
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="subjects[]" value="{{ $subject->id }}"
-                            {{ in_array($subject->id, $teacher->subjects->pluck('id')->toArray()) ? 'checked' : '' }}>
-                        <span>{{ $subject->name }}</span>
-                    </label>
-                @endforeach
+                        <!-- Endereço -->
+                        <div>
+                            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Endereço</label>
+                            <input type="text" 
+                                   id="address" 
+                                   name="address" 
+                                   value="{{ old('address', $teacher->address) }}"
+                                   class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+
+                        <!-- Datas -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="birth_date" class="block text-sm font-medium text-gray-700 mb-1">Data de Nascimento</label>
+                                <input type="date" 
+                                       id="birth_date" 
+                                       name="birth_date" 
+                                       value="{{ old('birth_date', $teacher->birth_date) }}"
+                                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+
+                            <div>
+                                <label for="hire_date" class="block text-sm font-medium text-gray-700 mb-1">Data de Contratação</label>
+                                <input type="date" 
+                                       id="hire_date" 
+                                       name="hire_date" 
+                                       value="{{ old('hire_date', $teacher->hire_date) }}"
+                                       class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <!-- Status e Qualificação -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status *</label>
+                                <select id="status" 
+                                        name="status" 
+                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
+                                        required>
+                                    <option value="active" {{ old('status', $teacher->status) == 'active' ? 'selected' : '' }}>Ativo</option>
+                                    <option value="inactive" {{ old('status', $teacher->status) == 'inactive' ? 'selected' : '' }}>Inativo</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label for="qualification" class="block text-sm font-medium text-gray-700 mb-1">Qualificação</label>
+                                <select id="qualification" 
+                                        name="qualification" 
+                                        class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Selecione...</option>
+                                    @foreach($qualificationOptions as $key => $option)
+                                    <option value="{{ $key }}" {{ old('qualification', $teacher->qualification) == $key ? 'selected' : '' }}>
+                                        {{ $option }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Matérias -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Matérias</label>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                                @php
+                                    $selectedSubjects = old('subjects', $teacher->subjects->pluck('id')->toArray());
+                                @endphp
+                                @forelse($subjects as $subject)
+                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-white p-2 rounded transition">
+                                    <input type="checkbox" 
+                                           name="subjects[]" 
+                                           value="{{ $subject->id }}"
+                                           {{ in_array($subject->id, $selectedSubjects) ? 'checked' : '' }}
+                                           class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    <span class="text-sm text-gray-700">{{ $subject->name }}</span>
+                                </label>
+                                @empty
+                                <p class="col-span-2 md:col-span-3 text-gray-500 text-sm">Nenhuma matéria cadastrada.</p>
+                                @endforelse
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="flex items-center gap-3 pt-4 border-t">
+                            <button type="submit" 
+                                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                                Atualizar Professor
+                            </button>
+                            <a href="{{ route('teachers.index') }}" 
+                               class="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-
-        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-            Atualizar
-        </button>
-        <a href="{{ route('teachers.index') }}" class="ml-2 text-gray-600 hover:underline">Cancelar</a>
-    </form>
-</div>
+    </div>
 </x-app-layout>
-
