@@ -18,7 +18,8 @@ return new class extends Migration
             $table->foreignId('subject_id')->constrained()->onDelete('cascade');
             $table->foreignId('teacher_id')->nullable()->constrained()->onDelete('set null');
             $table->integer('bimester'); // 1 a 4
-            $table->decimal('grade', 5, 2)->nullable(); // nota de 0 a 10
+            $table->decimal('grade', 5, 2);// nota de 0 a 10
+            $table->integer('year');
             $table->timestamps();
         });
     }
