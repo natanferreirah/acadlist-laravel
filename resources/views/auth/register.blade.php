@@ -10,9 +10,9 @@
         </div>
         <!-- Name School -->
         <div>
-            <x-input-label for="name_school" :value="__('component.name')" />
-            <x-text-input id="name_school" class="block mt-1 w-full" type="text" name="name_school" :value="old('name_school')" autofocus autocomplete="name_school" />
-            <x-input-error :messages="$errors->get('name_school')" class="mt-2" />
+            <x-input-label for="name" :value="__('component.name')" />
+            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" autofocus autocomplete="name" />
+            <x-input-error :messages="$errors->get('name')" class="mt-2" />
         </div>
 
         <!-- Email Address -->
