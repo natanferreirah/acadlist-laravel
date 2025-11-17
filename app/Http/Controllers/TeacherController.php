@@ -8,6 +8,8 @@ use App\Models\Teacher;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class TeacherController extends Controller
 {
@@ -27,6 +29,9 @@ class TeacherController extends Controller
 
     public function store(Request $request)
     {
+        Log::info('===== INICIANDO STORE =====');
+        Log::info('Dados recebidos:', $request->all());
+
         $request->validate([
             'name' => 'required|string|max:255',
             'cpf' => 'required|string|max:14|unique:teachers,cpf',
@@ -35,53 +40,84 @@ class TeacherController extends Controller
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
             'hire_date' => 'nullable|date',
-            'status' => 'required|string',
+            'status' => 'required|in:active,inactive',
             'qualification' => 'required|string',
-            'subjects' => 'array'
+            'subjects' => 'nullable|array',
+            'subjects.*' => 'exists:subjects,id'
         ]);
 
-        // Garante que o birth_date pode ser nulo
-        $request['birth_date'] = $request->birth_date ?? null;
+        Log::info('Validação passou');
 
-        // Cria o professor
-        $teacher = Teacher::create($request->except('subjects'));
+        try {
+            DB::beginTransaction();
+            Log::info('Transaction iniciada');
 
-        // Relaciona as matérias
-        if ($request->has('subjects')) {
-            $teacher->subjects()->sync($request->subjects);
+            // ---------- Geração de username ----------
+            $nameParts = explode(' ', Str::lower(Str::ascii($request->name)));
+            $first = $nameParts[0];
+            $last = count($nameParts) > 1 ? end($nameParts) : '';
+            $baseUsername = $last ? "{$first}.{$last}" : $first;
+
+            $username = $baseUsername;
+            $count = 1;
+
+            while (User::where('username', $username)->exists()) {
+                $username = "{$baseUsername}{$count}";
+                $count++;
+            }
+
+            Log::info('Username gerado: ' . $username);
+
+            // ---------- Cria o usuário vinculado ----------
+            $defaultPassword = 'Prof@' . date('Y');
+            
+            $user = User::create([
+                'username' => $username,
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($defaultPassword),
+                'role' => 'teacher',
+            ]);
+
+            Log::info('Usuário criado:', ['id' => $user->id]);
+
+            // ---------- Cria o professor ----------
+            $teacher = Teacher::create([
+                'user_id' => $user->id,
+                'name' => $request->name,
+                'cpf' => $request->cpf,
+                'birth_date' => $request->birth_date,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'address' => $request->address,
+                'hire_date' => $request->hire_date,
+                'status' => $request->status,
+                'qualification' => $request->qualification,
+            ]);
+
+            Log::info('Professor criado:', ['id' => $teacher->id]);
+
+            // ---------- Relaciona as matérias ----------
+            if ($request->has('subjects')) {
+                $teacher->subjects()->sync($request->subjects);
+                Log::info('Matérias vinculadas');
+            }
+
+            DB::commit();
+            Log::info('Transaction commitada - SUCESSO!');
+
+            return redirect()->route('teachers.index')
+                ->with('success', "Professor cadastrado com sucesso!<br><strong>Login:</strong> {$username}<br><strong>Senha:</strong> {$defaultPassword}");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('ERRO ao criar professor: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Erro ao cadastrar professor: ' . $e->getMessage());
         }
-
-        // ---------- Geração de username ----------
-        $nameParts = explode(' ', Str::lower(Str::ascii($teacher->name)));
-        $first = $nameParts[0];
-        $last = count($nameParts) > 1 ? end($nameParts) : '';
-        $baseUsername = "{$first}.{$last}" ?: $first;
-
-        $username = $baseUsername;
-        $count = 1;
-
-        // Garante que o username seja único
-        while (User::where('username', $username)->exists()) {
-            $username = "{$baseUsername}{$count}";
-            $count++;
-        }
-
-        // ---------- Cria o usuário vinculado ----------
-        $user = User::create([
-            'username' => $username,
-            'name' => $teacher->name,
-            'email' => $teacher->email,
-            'password' => Hash::make('prof123'),
-            'role' => 'teacher',
-        ]);
-
-        // Vincula o professor ao usuário
-        $teacher->user_id = $user->id;
-        $teacher->save();
-
-        return redirect()->route('teachers.index')
-            ->with('success', "Professor cadastrado com sucesso! 
-            Login: {$username} | Senha: prof123");
     }
 
     public function edit(Teacher $teacher)
@@ -94,48 +130,79 @@ class TeacherController extends Controller
     public function update(Request $request, Teacher $teacher)
     {
         $request->validate([
-            'name' => 'required|string',
-            'cpf' => 'required|string|unique:teachers,cpf,' . $teacher->id,
+            'name' => 'required|string|max:255',
+            'cpf' => 'required|string|max:14|unique:teachers,cpf,' . $teacher->id,
             'birth_date' => 'nullable|date',
-            'email' => 'required|email|unique:teachers,email,' . $teacher->id,
+            'email' => 'required|email|unique:teachers,email,' . $teacher->id . '|unique:users,email,' . $teacher->user_id,
             'phone' => 'nullable|string',
             'address' => 'nullable|string',
             'hire_date' => 'nullable|date',
-            'status' => 'required|string',
+            'status' => 'required|in:active,inactive',
             'qualification' => 'required|string',
-            'subjects' => 'array'
+            'subjects' => 'nullable|array',
+            'subjects.*' => 'exists:subjects,id'
         ]);
 
-        // Atualiza os dados do professor
-        $teacher->update($request->except('subjects'));
+        try {
+            DB::beginTransaction();
 
-        // Atualiza as matérias
-        $teacher->subjects()->sync($request->subjects ?? []);
+            // Atualiza os dados do professor
+            $teacher->update($request->except('subjects'));
 
-        // Atualiza o usuário vinculado
-        if ($teacher->user_id) {
-            $user = User::find($teacher->user_id);
-            if ($user) {
-                $user->update([
-                    'name' => $teacher->name,
-                    'email' => $teacher->email,
-                ]);
+            // Atualiza as matérias
+            $teacher->subjects()->sync($request->subjects ?? []);
+
+            // Atualiza o usuário vinculado
+            if ($teacher->user_id) {
+                $user = User::find($teacher->user_id);
+                if ($user) {
+                    $user->update([
+                        'name' => $request->name,
+                        'email' => $request->email,
+                    ]);
+                }
             }
-        }
 
-        return redirect()->route('teachers.index')
-            ->with('success', 'Professor atualizado com sucesso!');
+            DB::commit();
+
+            return redirect()->route('teachers.index')
+                ->with('success', 'Professor atualizado com sucesso!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Erro ao atualizar professor: ' . $e->getMessage());
+        }
     }
 
     public function destroy(Teacher $teacher)
     {
-        // Deleta também o usuário vinculado
-        if ($teacher->user_id) {
-            User::where('id', $teacher->user_id)->delete();
+        try {
+            DB::beginTransaction();
+
+            // Deleta o usuário vinculado
+            if ($teacher->user_id) {
+                User::where('id', $teacher->user_id)->delete();
+            }
+
+            // Desvincula as matérias antes de deletar
+            $teacher->subjects()->detach();
+
+            // Deleta o professor
+            $teacher->delete();
+
+            DB::commit();
+
+            return redirect()->route('teachers.index')
+                ->with('success', 'Professor removido com sucesso!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            return redirect()->route('teachers.index')
+                ->with('error', 'Erro ao remover professor: ' . $e->getMessage());
         }
-
-        $teacher->delete();
-
-        return redirect()->route('teachers.index')->with('success', 'Professor removido com sucesso!');
     }
 }

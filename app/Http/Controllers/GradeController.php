@@ -32,8 +32,8 @@ class GradeController extends Controller
             $grades = Grade::all();
         }
         $schoolClasses = SchoolClass::all();
-        $subjects = Subject::all();
-        $teachers = Teacher::all();
+        $teacher = Auth::user()->teacher;
+        $subjects = $teacher ? $teacher->subjects : collect();
 
         $selectedClass = $request->input('class');
         $selectedSubject = $request->input('subject');
@@ -41,6 +41,7 @@ class GradeController extends Controller
 
         $students = collect();
         $grades = [];
+
 
         if ($selectedClass && $selectedSubject && $selectedTeacher) {
             $students = Student::where('school_class_id', $selectedClass)->get();
@@ -57,16 +58,16 @@ class GradeController extends Controller
             }
         }
 
-        return view('grades.index', compact(
-            'schoolClasses',
-            'subjects',
-            'teachers',
-            'students',
-            'grades',
-            'selectedClass',
-            'selectedSubject',
-            'selectedTeacher'
-        ));
+        return view('grades.index', [
+            'schoolClasses' => $schoolClasses,
+            'subjects' => $subjects,
+            'teacher' => $teacher,
+            'students' => $students,
+            'grades' => $grades,
+            'selectedClass' => $selectedClass,
+            'selectedSubject' => $selectedSubject,
+            'selectedTeacher' => $selectedTeacher,
+        ]);
     }
 
     public function store(Request $request)
