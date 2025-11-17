@@ -41,6 +41,7 @@ class Subject extends Model
     ];
 
     public static $departmentOptions = [
+        'technical course' => 'Curso Técnico',
         'exact' => 'Exatas',
         'humanities_science' => 'Ciências Humanas',
         'natural_science' => 'Ciências da Natureza',

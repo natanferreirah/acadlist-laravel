@@ -19,7 +19,7 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'username',
-        'name_school',
+        'name',
         'email',
         'password',
         'role',
@@ -51,5 +51,16 @@ class User extends Authenticatable
     public function teacher()
     {
         return $this->hasOne(Teacher::class);
+    }
+    
+    public function isSchool(): bool
+    {
+        return $this->role === 'school';
+    }
+
+    // Helper para verificar se é professor
+    public function isTeacher(): bool
+    {
+        return $this->role === 'teacher';
     }
 }

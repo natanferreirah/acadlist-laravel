@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Teacher extends Model
 {
     protected $fillable = [
+        'user_id',
         'name',
         'cpf',
         'birth_date',
@@ -15,7 +16,7 @@ class Teacher extends Model
         'address',
         'hire_date',
         'status',
-        'qualification'
+        'qualification',
     ];
 
     // Teacher.php
@@ -30,16 +31,37 @@ class Teacher extends Model
     }
 
     public static $qualificationOptions = [
-        'license' => 'Licenciatura',
+        'technical course' => 'Curso Técnico',
+        'licentiate' => 'Licenciatura',
         'bachelor' => 'Bacharelado',
         'postgraduate' => 'Pós-graduação',
         'master' => 'Mestrado',
         'doctorate' => 'Doutorado',
     ];
 
-    // Muitos pra muitos: um professor ensina várias matérias
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relacionamento com School
+     */
+    public function school()
+    {
+        return $this->belongsTo(SchoolClass::class);
+    }
+
+    /**
+     * Relacionamento com Subjects (matérias)
+     */
     public function subjects()
     {
-        return $this->belongsToMany(Subject::class);
+        return $this->belongsToMany(Subject::class, 'subject_teacher');
+    }
+
+    public function grades()
+    {
+        return $this->hasMany(Grade::class);
     }
 }
