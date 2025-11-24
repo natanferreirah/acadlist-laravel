@@ -8,7 +8,7 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\SchoolClass;
-use Illuminate\Http\Request;
+use Illuminate\Http\Request;c
 
 class GradeController extends Controller
 {
@@ -16,10 +16,12 @@ class GradeController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
-            abort(403, 'Usuário não autenticado.');
-        }
+        // Novo: ano selecionado
+        $selectedYear = $request->input('year', date('Y'));
 
+        // 📌 ADICIONADO: lista de anos letivos existentes nas turmas
+        $availableYears = SchoolClass::select('school_year')->distinct()->pluck('school_year');
+        // Busca as turmas e matérias baseado na role
         if ($user->role === 'teacher') {
             $teacher = $user->teacher;
 
@@ -27,59 +29,96 @@ class GradeController extends Controller
                 abort(403, 'Professor não vinculado ao usuário.');
             }
 
-            $grades = Grade::where('teacher_id', $teacher->id)->get();
+            $schoolClasses = SchoolClass::whereHas('subjects', function ($query) use ($teacher) {
+                $query->where('teacher_id', $teacher->id);
+            });
+
+            // 📌 ADICIONADO: filtra as turmas pelo ano
+            if ($selectedYear) {
+                $schoolClasses = $schoolClasses->where('school_year', $selectedYear);
+            }
+
+            $schoolClasses = $schoolClasses->get();
+
+            $subjects = $teacher->subjects;
+            $selectedTeacher = $teacher->id;
         } else {
-            $grades = Grade::all();
+            $schoolClasses = SchoolClass::query();
+
+            // 📌 ADICIONADO: filtra as turmas pelo ano
+            if ($selectedYear) {
+                $schoolClasses->where('year', $selectedYear);
+            }
+
+            $schoolClasses = $schoolClasses->get();
+
+            $subjects = Subject::all();
+            $selectedTeacher = $request->input('teacher');
         }
-        $schoolClasses = SchoolClass::all();
-        $teacher = Auth::user()->teacher;
-        $subjects = $teacher ? $teacher->subjects : collect();
 
         $selectedClass = $request->input('class');
         $selectedSubject = $request->input('subject');
-        $selectedTeacher = $request->input('teacher');
 
         $students = collect();
         $grades = [];
 
-
-        if ($selectedClass && $selectedSubject && $selectedTeacher) {
+        if ($selectedClass && $selectedSubject && $selectedTeacher && $selectedYear) {
             $students = Student::where('school_class_id', $selectedClass)->get();
 
-            // Busca todas as notas dessa turma + matéria + professor
             $gradesData = Grade::where('school_class_id', $selectedClass)
                 ->where('subject_id', $selectedSubject)
                 ->where('teacher_id', $selectedTeacher)
+                ->where('year', $selectedYear)
                 ->get();
 
-            // Organiza as notas por aluno e bimestre
             foreach ($gradesData as $g) {
                 $grades[$g->student_id][$g->bimester][] = $g;
             }
         }
 
+        $teachers = $user->role === 'school' ? Teacher::all() : collect();
+
         return view('grades.index', [
             'schoolClasses' => $schoolClasses,
             'subjects' => $subjects,
-            'teacher' => $teacher,
+            'teachers' => $teachers,
             'students' => $students,
             'grades' => $grades,
             'selectedClass' => $selectedClass,
             'selectedSubject' => $selectedSubject,
             'selectedTeacher' => $selectedTeacher,
+            'selectedYear' => $selectedYear,
+            'userRole' => $user->role,
+
+            // 📌 ADICIONADO: enviar anos disponíveis para a view
+            'availableYears' => $availableYears,
         ]);
     }
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $data = $request->validate([
             'school_class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
             'teacher_id' => 'required|exists:teachers,id',
+            'year' => 'required|integer|min:2000|max:2100',
             'grades' => 'required|array',
         ]);
 
-        // Percorre cada aluno e salva as notas por bimestre
+        if ($user->role === 'teacher') {
+            $teacher = $user->teacher;
+
+            if (!$teacher || $teacher->id != $data['teacher_id']) {
+                abort(403, 'Você só pode lançar notas como seu próprio professor.');
+            }
+
+            if (!$teacher->subjects->contains($data['subject_id'])) {
+                abort(403, 'Você não leciona essa matéria.');
+            }
+        }
+
         foreach ($data['grades'] as $studentId => $bimesters) {
             foreach ($bimesters as $bimester => $gradeValue) {
                 if ($gradeValue === null || $gradeValue === '') continue;
@@ -91,9 +130,11 @@ class GradeController extends Controller
                         'school_class_id' => $data['school_class_id'],
                         'teacher_id' => $data['teacher_id'],
                         'bimester' => $bimester,
+                        'year' => $data['year'],
                     ],
                     [
-                        'grade' => $gradeValue
+                        'grade' => $gradeValue,
+                        'year' => $data['year'],
                     ]
                 );
             }
@@ -103,46 +144,80 @@ class GradeController extends Controller
             'class' => $data['school_class_id'],
             'subject' => $data['subject_id'],
             'teacher' => $data['teacher_id'],
+            'year' => $data['year'],
         ])->with('success', 'Notas salvas com sucesso!');
     }
 
     public function create()
     {
-        $schoolClasses = SchoolClass::all();
-        $subjects = Subject::all();
-        $teachers = Teacher::all();
+        $user = Auth::user();
 
-        return view('grades.create', compact('schoolClasses', 'subjects', 'teachers'));
+        if ($user->role === 'teacher') {
+            $teacher = $user->teacher;
+
+            if (!$teacher) {
+                abort(403, 'Professor não vinculado ao usuário.');
+            }
+
+            $schoolClasses = SchoolClass::whereHas('subjects', function ($query) use ($teacher) {
+                $query->where('teacher_id', $teacher->id);
+            })->get();
+
+            $subjects = $teacher->subjects;
+            $teachers = collect([$teacher]);
+        } else {
+            $schoolClasses = SchoolClass::all();
+            $subjects = Subject::all();
+            $teachers = Teacher::all();
+        }
+
+        $years = range(date('Y') - 5, date('Y') + 1);
+
+        return view('grades.create', compact('schoolClasses', 'subjects', 'teachers', 'years'));
     }
 
     public function edit($id)
     {
+        $user = Auth::user();
         $grade = Grade::findOrFail($id);
+
+        if ($user->role === 'teacher') {
+            $teacher = $user->teacher;
+
+            if (!$teacher || $grade->teacher_id != $teacher->id) {
+                abort(403, 'Você só pode editar suas próprias notas.');
+            }
+        }
+
         $schoolClasses = SchoolClass::all();
         $subjects = Subject::all();
         $teachers = Teacher::all();
         $students = Student::where('school_class_id', $grade->school_class_id)->get();
+        $years = range(date('Y') - 5, date('Y') + 1);
 
-        return view('grades.edit', compact('grade', 'schoolClasses', 'subjects', 'teachers', 'students'));
+        return view('grades.edit', compact('grade', 'schoolClasses', 'subjects', 'teachers', 'students', 'years'));
     }
 
     public function update(Request $request, $id)
     {
+        $user = Auth::user();
+        $grade = Grade::findOrFail($id);
+
+        if ($user->role === 'teacher') {
+            $teacher = $user->teacher;
+
+            if (!$teacher || $grade->teacher_id != $teacher->id) {
+                abort(403, 'Você só pode atualizar suas próprias notas.');
+            }
+        }
+
         $data = $request->validate([
             'grade' => 'required|numeric|min:0|max:10',
+            'year' => 'required|integer|min:2000|max:2100',
         ]);
 
-        $grade = Grade::findOrFail($id);
         $grade->update($data);
 
         return redirect()->route('grades.index')->with('success', 'Nota atualizada com sucesso!');
-    }
-
-    public function destroy($id)
-    {
-        $grade = Grade::findOrFail($id);
-        $grade->delete();
-
-        return redirect()->route('grades.index')->with('success', 'Nota excluída com sucesso!');
     }
 }
