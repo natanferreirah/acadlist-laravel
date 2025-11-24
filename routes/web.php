@@ -32,6 +32,12 @@ Route::middleware(['auth'])->group(function () {
     })->name('dashboard');
 
     // ========== ROTAS PARA SCHOOL ==========
+    
+    // ========== ROTAS PARA TEACHER ==========
+    Route::middleware(['role:teacher'])->group(function () {
+        Route::resource('grades', GradeController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+    });
+    
     Route::middleware(['role:school'])->group(function () {
         Route::resource('students', StudentController::class);
         Route::resource('school-classes', SchoolClassController::class);
@@ -39,12 +45,6 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('subjects', SubjectController::class);
         Route::resource('grades', GradeController::class);
     });
-
-    // ========== ROTAS PARA TEACHER ==========
-    Route::middleware(['role:teacher'])->group(function () {
-        Route::resource('grades', GradeController::class)->only(['index', 'create', 'store', 'edit', 'update']);
-    });
-    
 
 });
 
