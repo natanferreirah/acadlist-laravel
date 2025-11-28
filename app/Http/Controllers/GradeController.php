@@ -8,51 +8,35 @@ use App\Models\Student;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\SchoolClass;
-use Illuminate\Http\Request;c
+use Illuminate\Http\Request;
 
 class GradeController extends Controller
 {
     public function index(Request $request)
     {
         $user = Auth::user();
-
-        // Novo: ano selecionado
+        
         $selectedYear = $request->input('year', date('Y'));
+        
+        $availableYears = SchoolClass::distinct()
+            ->orderBy('school_year', 'desc')
+            ->pluck('school_year');
 
-        // 📌 ADICIONADO: lista de anos letivos existentes nas turmas
-        $availableYears = SchoolClass::select('school_year')->distinct()->pluck('school_year');
-        // Busca as turmas e matérias baseado na role
         if ($user->role === 'teacher') {
             $teacher = $user->teacher;
-
+            
             if (!$teacher) {
                 abort(403, 'Professor não vinculado ao usuário.');
             }
 
-            $schoolClasses = SchoolClass::whereHas('subjects', function ($query) use ($teacher) {
-                $query->where('teacher_id', $teacher->id);
-            });
-
-            // 📌 ADICIONADO: filtra as turmas pelo ano
-            if ($selectedYear) {
-                $schoolClasses = $schoolClasses->where('school_year', $selectedYear);
-            }
-
-            $schoolClasses = $schoolClasses->get();
-
+            $schoolClasses = SchoolClass::orderBy('name')->get();
             $subjects = $teacher->subjects;
             $selectedTeacher = $teacher->id;
+            $teachers = collect();
         } else {
-            $schoolClasses = SchoolClass::query();
-
-            // 📌 ADICIONADO: filtra as turmas pelo ano
-            if ($selectedYear) {
-                $schoolClasses->where('year', $selectedYear);
-            }
-
-            $schoolClasses = $schoolClasses->get();
-
+            $schoolClasses = SchoolClass::orderBy('name')->get();
             $subjects = Subject::all();
+            $teachers = Teacher::all();
             $selectedTeacher = $request->input('teacher');
         }
 
@@ -76,8 +60,6 @@ class GradeController extends Controller
             }
         }
 
-        $teachers = $user->role === 'school' ? Teacher::all() : collect();
-
         return view('grades.index', [
             'schoolClasses' => $schoolClasses,
             'subjects' => $subjects,
@@ -89,8 +71,6 @@ class GradeController extends Controller
             'selectedTeacher' => $selectedTeacher,
             'selectedYear' => $selectedYear,
             'userRole' => $user->role,
-
-            // 📌 ADICIONADO: enviar anos disponíveis para a view
             'availableYears' => $availableYears,
         ]);
     }
@@ -99,7 +79,7 @@ class GradeController extends Controller
     {
         $user = Auth::user();
 
-        $data = $request->validate([
+        $validated = $request->validate([
             'school_class_id' => 'required|exists:school_classes,id',
             'subject_id' => 'required|exists:subjects,id',
             'teacher_id' => 'required|exists:teachers,id',
@@ -109,42 +89,53 @@ class GradeController extends Controller
 
         if ($user->role === 'teacher') {
             $teacher = $user->teacher;
-
-            if (!$teacher || $teacher->id != $data['teacher_id']) {
+            if (!$teacher || $teacher->id != $validated['teacher_id']) {
                 abort(403, 'Você só pode lançar notas como seu próprio professor.');
             }
-
-            if (!$teacher->subjects->contains($data['subject_id'])) {
+            if (!$teacher->subjects->contains($validated['subject_id'])) {
                 abort(403, 'Você não leciona essa matéria.');
             }
         }
 
-        foreach ($data['grades'] as $studentId => $bimesters) {
+        foreach ($validated['grades'] as $studentId => $bimesters) {
             foreach ($bimesters as $bimester => $gradeValue) {
-                if ($gradeValue === null || $gradeValue === '') continue;
+                
+                if ($gradeValue === null || $gradeValue === '' || trim($gradeValue) === '') {
+                    continue;
+                }
 
+                // CONVERSÃO: vírgula → ponto
+                $gradeValue = str_replace(',', '.', $gradeValue);
+                $gradeValue = floatval($gradeValue);
+
+                if ($gradeValue < 0 || $gradeValue > 10) {
+                    return back()->withErrors([
+                        'grades' => "Nota inválida: deve estar entre 0 e 10."
+                    ])->withInput();
+                }
+
+                // Salva com PONTO no banco
                 Grade::updateOrCreate(
                     [
                         'student_id' => $studentId,
-                        'subject_id' => $data['subject_id'],
-                        'school_class_id' => $data['school_class_id'],
-                        'teacher_id' => $data['teacher_id'],
+                        'subject_id' => $validated['subject_id'],
+                        'school_class_id' => $validated['school_class_id'],
+                        'teacher_id' => $validated['teacher_id'],
                         'bimester' => $bimester,
-                        'year' => $data['year'],
+                        'year' => $validated['year'],
                     ],
                     [
-                        'grade' => $gradeValue,
-                        'year' => $data['year'],
+                        'grade' => round($gradeValue, 2),
                     ]
                 );
             }
         }
 
         return redirect()->route('grades.index', [
-            'class' => $data['school_class_id'],
-            'subject' => $data['subject_id'],
-            'teacher' => $data['teacher_id'],
-            'year' => $data['year'],
+            'class' => $validated['school_class_id'],
+            'subject' => $validated['subject_id'],
+            'teacher' => $validated['teacher_id'],
+            'year' => $validated['year'],
         ])->with('success', 'Notas salvas com sucesso!');
     }
 
@@ -219,5 +210,23 @@ class GradeController extends Controller
         $grade->update($data);
 
         return redirect()->route('grades.index')->with('success', 'Nota atualizada com sucesso!');
+    }
+
+    public function destroy($id)
+    {
+        $user = Auth::user();
+        $grade = Grade::findOrFail($id);
+
+        if ($user->role === 'teacher') {
+            $teacher = $user->teacher;
+
+            if (!$teacher || $grade->teacher_id != $teacher->id) {
+                abort(403, 'Você só pode deletar suas próprias notas.');
+            }
+        }
+
+        $grade->delete();
+
+        return redirect()->route('grades.index')->with('success', 'Nota excluída com sucesso!');
     }
 }

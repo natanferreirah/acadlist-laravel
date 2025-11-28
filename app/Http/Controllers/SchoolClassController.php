@@ -50,7 +50,7 @@ class SchoolClassController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(SchoolClass $schoolclass)
+    public function show(SchoolClass $school_class)
     {
         //
     }
@@ -58,16 +58,16 @@ class SchoolClassController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(SchoolClass $schoolclass)
+    public function edit(SchoolClass $school_class)
     {
         $shiftOptions = SchoolClass::$shiftOptions;
-        return view('schoolclasses.edit', compact('schoolclass', 'shiftOptions'));
+        return view('schoolclasses.edit', compact('school_class', 'shiftOptions'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, SchoolClass $schoolclass)
+    public function update(Request $request, SchoolClass $school_class)
     {
             $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -77,7 +77,7 @@ class SchoolClassController extends Controller
             'grade' => 'required',
         ]);
 
-        $updated = $schoolclass->update($validated);
+        $updated = $school_class->update($validated);
 
         if($updated){
             return redirect()->route('school-classes.index')->with('sucess', 'Turma atualizada com sucesso');
@@ -89,9 +89,9 @@ class SchoolClassController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(SchoolClass $schoolclass)
+    public function destroy(SchoolClass $school_class)
     {
-        $deleted = $schoolclass->delete();
+        $deleted = $school_class->delete();
 
         if ($deleted) {
             return redirect()->route('school-classes.index')->with('sucess', 'Turma excluída com sucesso');
