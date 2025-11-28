@@ -8,9 +8,10 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\SubjectController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\SchoolClassController;
+use App\Http\Controllers\DashboardController;
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -28,22 +29,21 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('grades.index');
         }
 
-        return view('dashboard');
+        // Para role 'school', usa o DashboardController com estatísticas
+        return app(DashboardController::class)->index();
     })->name('dashboard');
 
-    // ========== ROTAS PARA SCHOOL ==========
-    
-    // ========== ROTAS PARA TEACHER ==========
-    Route::middleware(['role:teacher'])->group(function () {
-        Route::resource('grades', GradeController::class)->only(['index', 'create', 'store', 'edit', 'update']);
+    // ========== ROTAS PARA GRADES (teacher e school) ==========
+    Route::middleware(['role:teacher,school'])->group(function () {
+        Route::resource('grades', GradeController::class);
     });
     
+    // ========== ROTAS EXCLUSIVAS PARA SCHOOL ==========
     Route::middleware(['role:school'])->group(function () {
         Route::resource('students', StudentController::class);
         Route::resource('school-classes', SchoolClassController::class);
         Route::resource('teachers', TeacherController::class);
         Route::resource('subjects', SubjectController::class);
-        Route::resource('grades', GradeController::class);
     });
 
 });
