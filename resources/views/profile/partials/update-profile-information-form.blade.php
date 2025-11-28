@@ -1,10 +1,10 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <h2 class="text-lg font-medium text-gray-800">
             {{ __('Profile Information') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+        <p class="mt-1 text-sm text-gray-600">
             {{ __("Update your account's profile information and email address.") }}
         </p>
     </header>
@@ -24,9 +24,9 @@
         </div>
 
         <div>
-            <x-input-label for="name_school" :value="__('component.name')" />
-            <x-text-input id="name_school" name="name_school" type="text" class="mt-1 block w-full" :value="old('name_school', $user->name_school)" autofocus autocomplete="name_school" />
-            <x-input-error class="mt-2" :messages="$errors->get('name_school')" />
+            <x-input-label for="name" :value="__('component.name')" />
+            <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" :value="old('name', $user->name)" autofocus autocomplete="name" />
+            <x-input-error class="mt-2" :messages="$errors->get('name')" />
         </div>
 
 
