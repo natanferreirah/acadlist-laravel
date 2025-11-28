@@ -14,7 +14,7 @@ class RoleMiddleware
      *
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
-    public function handle(Request $request, Closure $next, string $role): Response
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
         // Verifica se o usuário está autenticado
         if (!Auth::check()) {
@@ -24,8 +24,8 @@ class RoleMiddleware
         // Pega o usuário autenticado
         $user = Auth::user();
 
-        // Verifica se tem a role necessária
-        if ($user->role !== $role) {
+        // Verifica se tem alguma das roles necessárias
+        if (!in_array($user->role, $roles)) {
             abort(403, 'Você não tem permissão para acessar esta página.');
         }
 
