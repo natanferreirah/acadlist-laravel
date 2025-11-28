@@ -22,7 +22,6 @@
                     <form action="{{ route('students.store') }}" method="POST" class="space-y-6">
                         @csrf
 
-                        <!-- Nome -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nome Completo *</label>
                             <input type="text" 
@@ -34,7 +33,6 @@
                                    required>
                         </div>
 
-                        <!-- CPF e Data de Nascimento -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="cpf" class="block text-sm font-medium text-gray-700 mb-1">CPF *</label>
@@ -60,7 +58,6 @@
                             </div>
                         </div>
 
-                        <!-- Turma -->
                         <div>
                             <label for="school_class_id" class="block text-sm font-medium text-gray-700 mb-1">Turma *</label>
                             <select id="school_class_id" 
@@ -76,7 +73,6 @@
                             </select>
                         </div>
 
-                        <!-- Botões -->
                         <div class="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t">
                             <button type="submit" 
                                     class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
@@ -93,7 +89,6 @@
         </div>
     </div>
 
-    <!-- Script para aplicar máscara -->
     <script>
         function studentForm() {
             return {

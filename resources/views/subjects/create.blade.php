@@ -21,8 +21,6 @@
 
                     <form action="{{ route('subjects.store') }}" method="POST" class="space-y-6">
                         @csrf
-
-                        <!-- Nome da Matéria -->
                         <div>
                             <label for="subject_select" class="block text-sm font-medium text-gray-700 mb-1">Nome da Matéria *</label>
                             <select id="subject_select" 
@@ -38,8 +36,6 @@
                                 <option value="other" {{ old('name') == 'other' ? 'selected' : '' }}>Outra...</option>
                             </select>
                         </div>
-
-                        <!-- Campo customizado -->
                         <div id="custom_subject_field" style="display:none;">
                             <label for="custom_subject" class="block text-sm font-medium text-gray-700 mb-1">Nova Matéria *</label>
                             <input type="text" 
@@ -49,8 +45,6 @@
                                    class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" 
                                    placeholder="Digite o nome da nova matéria">
                         </div>
-
-                        <!-- Código e Carga Horária -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="code" class="block text-sm font-medium text-gray-700 mb-1">Código</label>
@@ -72,8 +66,6 @@
                                        placeholder="Ex: 60">
                             </div>
                         </div>
-
-                        <!-- Departamento e Status -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="department" class="block text-sm font-medium text-gray-700 mb-1">Departamento *</label>
@@ -101,8 +93,6 @@
                                 </select>
                             </div>
                         </div>
-
-                        <!-- Professores -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Professores</label>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 border border-gray-200 rounded-lg bg-gray-50 max-h-60 overflow-y-auto">
@@ -121,8 +111,6 @@
                             </div>
                             <p class="mt-1 text-xs text-gray-500">Selecione os professores que lecionam esta matéria</p>
                         </div>
-
-                        <!-- Botões -->
                         <div class="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t">
                             <button type="submit" 
                                     class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">

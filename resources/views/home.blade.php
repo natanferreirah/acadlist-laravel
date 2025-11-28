@@ -10,16 +10,13 @@
 </head>
 
 <body class="bg-white">
-    <!-- Header -->
     <div class="w-full transition-opacity opacity-100 duration-750 border-b shadow-sm bg-white">
         <header class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div class="flex items-center justify-between">
-                <!-- Logo -->
                 <div class="w-32 h-auto">
                     <img src="{{ asset('assets/img/Sem_título-removebg-preview 2.svg') }}" alt="Logo">
                 </div>
 
-                <!-- Navigation -->
                 @if (Route::has('login'))
                     <nav class="flex items-center gap-4">
                         @auth

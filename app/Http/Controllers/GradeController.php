@@ -104,7 +104,6 @@ class GradeController extends Controller
                     continue;
                 }
 
-                // CONVERSÃO: vírgula → ponto
                 $gradeValue = str_replace(',', '.', $gradeValue);
                 $gradeValue = floatval($gradeValue);
 
@@ -114,7 +113,6 @@ class GradeController extends Controller
                     ])->withInput();
                 }
 
-                // Salva com PONTO no banco
                 Grade::updateOrCreate(
                     [
                         'student_id' => $studentId,

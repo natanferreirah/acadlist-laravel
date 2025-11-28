@@ -60,8 +60,6 @@ class Subject extends Model
 
     public function getDisplayNameAttribute()
     {
-        // Se for uma matéria padrão, mantém o nome normal
-        // Se for personalizada, mostra o que está no banco
         return in_array($this->name, self::$defaultSubjects)
             ? $this->name
             : $this->name;
@@ -79,10 +77,8 @@ class Subject extends Model
             ->withTimestamps();
     }
 
-    // Relacionamento futuro para grades/notas (many-to-many com students via schoolclasses)
-    // Isso facilita: uma grade pertence a um student, subject e schoolclass
     public function grades()
     {
-        return $this->hasMany(Grade::class); // Assumindo uma tabela grades no futuro
+        return $this->hasMany(Grade::class);
     }
 }

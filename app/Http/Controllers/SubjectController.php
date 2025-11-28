@@ -37,7 +37,6 @@ class SubjectController extends Controller
             'teachers' => 'array'
         ]);
 
-        // Se for "outra matéria", pega o valor do campo custom_subject
         $subjectName = $request->name === 'other' ? $request->custom_subject : $request->name;
 
         $subject = Subject::create([

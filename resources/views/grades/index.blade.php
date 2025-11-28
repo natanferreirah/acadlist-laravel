@@ -9,8 +9,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-
-                    {{-- MENSAGENS --}}
                     @if (session('success'))
                         <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
                             ✅ {{ session('success') }}
@@ -26,12 +24,8 @@
                             </ul>
                         </div>
                     @endif
-
-                    {{-- FILTROS --}}
                     <form method="GET" action="{{ route('grades.index') }}" class="mb-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-
-                            {{-- Ano --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Ano Letivo</label>
                                 <select name="year" class="w-full border-gray-300 rounded-md shadow-sm" required>
@@ -44,8 +38,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
-                            {{-- Turma --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Turma</label>
                                 <select name="class" class="w-full border-gray-300 rounded-md shadow-sm" required>
@@ -58,8 +50,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
-                            {{-- Matéria --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Matéria</label>
                                 <select name="subject" class="w-full border-gray-300 rounded-md shadow-sm" required>
@@ -72,8 +62,6 @@
                                     @endforeach
                                 </select>
                             </div>
-
-                            {{-- Professor --}}
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Professor</label>
 
@@ -94,8 +82,6 @@
                                     <input type="hidden" name="teacher" value="{{ Auth::user()->teacher->id }}">
                                 @endif
                             </div>
-
-                            {{-- Botão --}}
                             <div class="flex items-end">
                                 <button type="submit"
                                     class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition flex items-center justify-center gap-2">
@@ -110,8 +96,6 @@
 
                         </div>
                     </form>
-
-                    {{-- TABELA --}}
                     @if ($students->count() > 0)
 
                         <form method="POST" action="{{ route('grades.store') }}">
@@ -202,8 +186,6 @@
                                                     ">
                                                     </td>
                                                 @endfor
-
-                                                {{-- MÉDIA --}}
                                                 <td
                                                     class="px-6 py-4 whitespace-nowrap text-center text-sm font-semibold {{ $count > 0 && $sum / $count < 6 ? 'text-red-600' : 'text-green-600' }}">
                                                     {{ $count > 0 ? number_format($sum / $count, 1, ',', '') : '-' }}

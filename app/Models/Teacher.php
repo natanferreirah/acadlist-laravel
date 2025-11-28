@@ -31,8 +31,6 @@ class Teacher extends Model
 
     public function getCpfFormatadoAttribute()
     {
-        // LÊ DO BANCO: 12345678900
-        // RETORNA: 123.456.789-00
         $cpf = $this->cpf;
         return substr($cpf, 0, 3) . '.' . 
                substr($cpf, 3, 3) . '.' . 

@@ -21,8 +21,6 @@
 
                     <form action="{{ route('school-classes.store') }}" method="POST" class="space-y-6">
                         @csrf
-
-                        <!-- Nome -->
                         <div>
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nome da Turma *</label>
                             <input type="text" 
@@ -33,8 +31,6 @@
                                    placeholder="Ex: 3º Ano A"
                                    required>
                         </div>
-
-                        <!-- Sala e Série -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="assigned_room" class="block text-sm font-medium text-gray-700 mb-1">Sala Atribuída *</label>
@@ -58,8 +54,6 @@
                                        required>
                             </div>
                         </div>
-
-                        <!-- Ano Letivo e Turno -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="school_year" class="block text-sm font-medium text-gray-700 mb-1">Ano Letivo *</label>
@@ -89,8 +83,6 @@
                                 </select>
                             </div>
                         </div>
-
-                        <!-- Botões -->
                         <div class="flex flex-col sm:flex-row items-center gap-3 pt-4 border-t">
                             <button type="submit" 
                                     class="w-full sm:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">

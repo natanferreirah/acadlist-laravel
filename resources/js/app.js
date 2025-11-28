@@ -1,7 +1,6 @@
 import Alpine from 'alpinejs'
 import IMask from 'imask'
 
-// Máscaras
 document.addEventListener('alpine:init', () => {
     Alpine.directive('mask-cpf', (el) => {
         IMask(el, { mask: '000.000.000-00' });

@@ -52,7 +52,6 @@ class TeacherController extends Controller
             DB::beginTransaction();
             Log::info('Transaction iniciada');
 
-            // ---------- Geração de username ----------
             $nameParts = explode(' ', Str::lower(Str::ascii($request->name)));
             $first = $nameParts[0];
             $last = count($nameParts) > 1 ? end($nameParts) : '';
@@ -68,7 +67,6 @@ class TeacherController extends Controller
 
             Log::info('Username gerado: ' . $username);
 
-            // ---------- Cria o usuário vinculado ----------
             $defaultPassword = 'Prof@' . date('Y');
             
             $user = User::create([
@@ -81,7 +79,6 @@ class TeacherController extends Controller
 
             Log::info('Usuário criado:', ['id' => $user->id]);
 
-            // ---------- Cria o professor ----------
             $teacher = Teacher::create([
                 'user_id' => $user->id,
                 'name' => $request->name,
@@ -97,7 +94,6 @@ class TeacherController extends Controller
 
             Log::info('Professor criado:', ['id' => $teacher->id]);
 
-            // ---------- Relaciona as matérias ----------
             if ($request->has('subjects')) {
                 $teacher->subjects()->sync($request->subjects);
                 Log::info('Matérias vinculadas');
@@ -146,13 +142,10 @@ class TeacherController extends Controller
         try {
             DB::beginTransaction();
 
-            // Atualiza os dados do professor
             $teacher->update($request->except('subjects'));
 
-            // Atualiza as matérias
             $teacher->subjects()->sync($request->subjects ?? []);
 
-            // Atualiza o usuário vinculado
             if ($teacher->user_id) {
                 $user = User::find($teacher->user_id);
                 if ($user) {
@@ -182,15 +175,11 @@ class TeacherController extends Controller
         try {
             DB::beginTransaction();
 
-            // Deleta o usuário vinculado
             if ($teacher->user_id) {
                 User::where('id', $teacher->user_id)->delete();
             }
 
-            // Desvincula as matérias antes de deletar
             $teacher->subjects()->detach();
-
-            // Deleta o professor
             $teacher->delete();
 
             DB::commit();

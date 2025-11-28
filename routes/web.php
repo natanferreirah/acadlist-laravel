@@ -15,13 +15,10 @@ Route::get('/', function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    
-    // Profile routes
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Dashboard com redirecionamento baseado na role
     Route::get('/dashboard', function () {
         $user = Auth::user();
 
@@ -29,16 +26,13 @@ Route::middleware(['auth'])->group(function () {
             return redirect()->route('grades.index');
         }
 
-        // Para role 'school', usa o DashboardController com estatísticas
         return app(DashboardController::class)->index();
     })->name('dashboard');
 
-    // ========== ROTAS PARA GRADES (teacher e school) ==========
     Route::middleware(['role:teacher,school'])->group(function () {
         Route::resource('grades', GradeController::class);
     });
     
-    // ========== ROTAS EXCLUSIVAS PARA SCHOOL ==========
     Route::middleware(['role:school'])->group(function () {
         Route::resource('students', StudentController::class);
         Route::resource('school-classes', SchoolClassController::class);
