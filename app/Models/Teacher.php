@@ -19,19 +19,28 @@ class Teacher extends Model
         'qualification',
     ];
 
-    // Teacher.php
-    public function getCpfFormatadoAttribute()
-    {
-        return preg_replace('/(\d{3})(\d{3})(\d{3})(\d{2})/', '$1.$2.$3-$4', $this->cpf);
-    }
-
     public function setCpfAttribute($value)
     {
-        $this->attributes['cpf'] = preg_replace('/\D/', '', $value); // remove tudo que não é número
+        $this->attributes['cpf'] = preg_replace('/\D/', '', $value);
+    }
+
+     public function setTelefoneAttribute($value)
+    {
+        $this->attributes['phone'] = preg_replace('/\D/', '', $value);
+    }
+
+    public function getCpfFormatadoAttribute()
+    {
+        // LÊ DO BANCO: 12345678900
+        // RETORNA: 123.456.789-00
+        $cpf = $this->cpf;
+        return substr($cpf, 0, 3) . '.' . 
+               substr($cpf, 3, 3) . '.' . 
+               substr($cpf, 6, 3) . '-' . 
+               substr($cpf, 9, 2);
     }
 
     public static $qualificationOptions = [
-        'technical course' => 'Curso Técnico',
         'licentiate' => 'Licenciatura',
         'bachelor' => 'Bacharelado',
         'postgraduate' => 'Pós-graduação',

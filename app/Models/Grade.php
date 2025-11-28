@@ -12,6 +12,7 @@ class Grade extends Model
         'student_id',
         'bimester',
         'grade',
+        'year',
     ];
 
     public function student()
